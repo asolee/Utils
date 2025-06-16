@@ -1,9 +1,9 @@
-import pandas as pd
+çimport pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os # Import os for directory operations
 
-def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, focus_colors_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True, ha_xticks: float = None):
+def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,collapse_focus_values_as: str = None, collapsed_color: str = None, focus_colors_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None):
     """
     Generates a stacked bar plot with specified columns, collapsing, scaling, and optional error bars
     representing the raw standard deviation.
@@ -83,31 +83,16 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                                                  moves them further down from the x-axis. Defaults to 0.0.
         group_bracket_linewidth (float, optional): The line width for the square brackets when grouping is enabled.
                                                     Defaults to 1.0.
-        group_bracket_vertical_line_length (float, optional): Controls the length of the vertical lines of the square brackets.
-                                                                This value will be added to or subtracted from the base
-                                                                `bracket_y_level` to define the extent of the vertical lines.
-                                                                Defaults to 0.05.
-        group_position (str, optional): Determines the position of group labels and brackets. default to 'bottom'
-                                        'bottom': Below the x-axis.
-                                        'middle': between x-ticks and x-label
-                                        'top': Above the plot, near the title.
-        show_group_label (bool, optional): If True, the group labels will be displayed. Defaults to True.
 
         #### FONTSIZE AND VISIBILITY PARAMETERS ####
 
         show_xlabel (bool, optional): If True, the x-axis label will be displayed. Defaults to True.
         xlabel (str, optional): Custom label for the x-axis. If provided, overrides default. Defaults to None.
         xlabel_fontsize (float, optional): The font size for the x-axis label. Defaults to 12.
-        xlabel_rotation (float, optional): Rotation angle for the x label in degrees. Defaults to 90.
-        xticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
-        ha_xticks (float, optional): Horizontal alignment for x-tick labels. 0.0 for left, 0.5 for center, 1.0 for right.
-                                     For values between these, proportional shift will be attempted.
-                                     Overrides automatic alignment based on `xlabel_rotation`. Defaults to None.
         show_ylabel (bool, optional): If True, the y-axis label will be displayed. Defaults to True.
         ylabel (str, optional): Custom label for the y-axis. If provided, overrides default. Defaults to None.
         ylabel_fontsize (float, optional): The font size for the y-axis label. Defaults to 12.
         show_title (bool, optional): If True, the plot title will be displayed. Defaults to True.
-        title (str, optional): Custom title, if provided, overrides default. Defaults to None.
         title_fontsize (float, optional): The font size for the plot title. Defaults to 14.
         xticks_fontsize (float, optional): The font size for the x-axis tick labels. Defaults to 10.
         yticks_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
@@ -162,17 +147,13 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
             conflicting_meta_values = group_consistency_check[group_consistency_check.duplicated(subset=[meta_column])][meta_column].tolist()
             raise ValueError(f"Each value in '{meta_column}' must correspond to a single value in '{group_by_column}'. "
                              f"Conflicting '{meta_column}' values: {conflicting_meta_values}")
-    
-    if group_position not in ['bottom', 'middle', 'top']:
-        raise ValueError("Invalid value for 'group_position'. Choose from 'bottom', 'middle', or 'top'.")
 
     # Validate scaling parameter
     if scaling not in ['none', 'median']:
         raise ValueError("Invalid value for 'scaling'. Choose from 'none' or 'median'.")
 
-    # Validate ha_xticks (allow values outside 0-1 if we're handling them as custom offsets)
-    if ha_xticks is not None and not isinstance(ha_xticks, (int, float)):
-        raise TypeError("ha_xticks must be a float or int if provided.")
+    # The warning message for error bars with scaling was removed in the previous iteration.
+    # The error bar logic now correctly calculates std on raw data and applies it regardless of scaling.
 
 
     # --- Data Preparation, handle focus values scenarios ---
@@ -300,17 +281,8 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     sorted_colors = [category_colors_map[cat] for cat in sorted_categories]
 
 
-    # --- Plotting ---
-    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
-
-    # Calculate x-positions for bars and handle grouping
-    x_positions = []
-    x_labels = []
-    current_x = 0
-    previous_group = None
-    group_label_data = [] # Stores (group_name, start_x, end_x) for brackets and labels
-    group_member_counts = {} # To count members per group
-
+    # --- Handle Grouping and X-axis Ordering ---
+    internal_grouping_map = None
     if group_by_column:
         # Create a mapping from meta_column value to group_by_column value
         internal_grouping_map = dataset.set_index(meta_column)[group_by_column].to_dict()
@@ -326,8 +298,20 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         if add_error_bars and grouped_std is not None:
              grouped_std_scaled = grouped_std_scaled.loc[sorted_meta_values, sorted_categories]
 
-        # Calculate x-positions for bars and handle grouping
-        for i, meta_val in enumerate(grouped_df_scaled.index):
+
+    # --- Plotting ---
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+
+    # Calculate x-positions for bars and handle grouping
+    x_positions = []
+    x_labels = []
+    current_x = 0
+    previous_group = None
+    group_label_data = [] # Stores (group_name, start_x, end_x) for brackets and labels
+    group_member_counts = {} # To count members per group
+
+    for i, meta_val in enumerate(grouped_df_scaled.index):
+        if group_by_column:
             current_group =  internal_grouping_map.get(meta_val)
             # Count members in the current group
             group_member_counts[current_group] = group_member_counts.get(current_group, 0) + 1
@@ -343,17 +327,13 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                 group_label_data.append((current_group, current_x, None))
             previous_group = current_group
 
-            x_positions.append(current_x)
-            x_labels.append(meta_val)
-            current_x += 1 # Standard bar width + default matplotlib spacing
+        x_positions.append(current_x)
+        x_labels.append(meta_val)
+        current_x += 1 # Standard bar width + default matplotlib spacing
 
-        if group_label_data:
-            # Update end_x for the last group
-            group_label_data[-1] = (group_label_data[-1][0], group_label_data[-1][1], x_positions[-1])
-
-    else: # No grouping
-        x_positions = np.arange(len(grouped_df_scaled.index))
-        x_labels = grouped_df_scaled.index.tolist()
+    if group_by_column and group_label_data:
+        # Update end_x for the last group
+        group_label_data[-1] = (group_label_data[-1][0], group_label_data[-1][1], x_positions[-1])
 
 
     # Add connecting shades if requested
@@ -407,111 +387,20 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
             bottom_val += height
 
     ax.set_xticks(x_positions)
-
-    # --- Custom Horizontal Alignment for X-tick Labels (ha_xticks) ---
-    ha_for_set_xticklabels = 'center' # Default for matplotlib's ha parameter
-    x_offset_in_data_coords = 0.0 # Additional offset to apply per label
-
-    if ha_xticks is not None:
-        if ha_xticks == 0.0:
-            ha_for_set_xticklabels = 'left'
-        elif ha_xticks == 0.5:
-            ha_for_set_xticklabels = 'center'
-        elif ha_xticks == 1.0:
-            ha_for_set_xticklabels = 'right'
-        else:
-            # For intermediate values (e.g., 0.1 to 0.49, or 0.51 to 0.9) an offset will be applied
-            # TO DO: This is not procise and might need fixing for specific fonts/text lengths.
-            if ha_xticks < 0.5:
-                ha_for_set_xticklabels = 'left'
-                # Calculate a normalized offset (0 to 1 scale)
-                normalized_offset = ha_xticks
-            else: # ha_xticks > 0.5
-                ha_for_set_xticklabels = 'right'
-                # If ha_xticks = 0.75, normalized_offset = 0.25 (from right)
-                normalized_offset = 1.0 - ha_xticks
-
-    else:
-        # automatic alignment based on xlabel_rotation
-        if xlabel_rotation == 0:
-            ha_for_set_xticklabels = 'center'
-        elif xlabel_rotation > 0 and xlabel_rotation < 90:
-            ha_for_set_xticklabels = 'right'
-        elif xlabel_rotation < 0 and xlabel_rotation > -90:
-            ha_for_set_xticklabels = 'left'
-        else: # For 90 degrees or other angles
-            ha_for_set_xticklabels = 'center' 
-            
-    # Set the tick labels using the determined string alignment
-    # Store the returned Text objects to modify their positions later if needed
-    x_tick_labels_objects = ax.set_xticklabels(x_labels, 
-                                               rotation=xlabel_rotation, 
-                                               ha=ha_for_set_xticklabels, 
-                                               fontsize=xticks_fontsize)
-    ax.tick_params(axis='x', pad=xticks_label_pad)
-
-    # Apply fine-tuning offset if ha_xticks is not one of the standard exact values (0.0, 0.5, 1.0)
-    if ha_xticks is not None and ha_xticks not in [0.0, 0.5, 1.0]:
-        # force a draw to get accurate bounding box sizes for labels
-        # This is important for precise text width measurement.
-        fig.canvas.draw() 
-        
-        for i, label_obj in enumerate(x_tick_labels_objects):
-            # Get the bounding box of the rendered text label in display coordinates
-            bbox = label_obj.get_window_extent(renderer=fig.canvas.get_renderer())
-            text_width_display = bbox.width
-
-            # Determine the current anchor point (relative to text itself) based on ha_for_set_xticklabels
-            if ha_for_set_xticklabels == 'left':
-                current_anchor_point_norm = 0.0 # Left edge is at the 'x'
-            elif ha_for_set_xticklabels == 'center':
-                current_anchor_point_norm = 0.5 # Center is at the 'x'
-            elif ha_for_set_xticklabels == 'right':
-                current_anchor_point_norm = 1.0 # Right edge is at the 'x'
-            else:
-                current_anchor_point_norm = 0.5
-
-            # The desired alignment on a 0-1 scale
-            desired_align_norm = ha_xticks
-
-            # Calculate the proportional shift needed in display units
-            shift_proportion_of_width = desired_align_norm - current_anchor_point_norm
-            dx_display_pixels = shift_proportion_of_width * text_width_display
-            
-            # Get the current position of the label (in data coordinates)
-            current_x_data, current_y_data = label_obj.get_position()
-            
-            # Convert the pixel offset to data coordinates
-            offset_data_x, _ = ax.transData.inverted().transform((dx_display_pixels, 0)) - ax.transData.inverted().transform((0, 0))
-
-            # Apply the offset to the label's x position
-            label_obj.set_x(current_x_data + offset_data_x)
-
-            # to prevent unintended rotation behavior.
-            label_obj.set_rotation_mode('anchor')
+    # X-tick labels rotated 90 degrees, centered
+    # TO DO: if rotation != 90, all positions get compromised
+    ax.set_xticklabels(x_labels, rotation=90, ha='center', fontsize=xticks_fontsize) # Use xticks_fontsize
+    ax.tick_params(axis='x', pad=5) # Add some padding to move labels inside if needed, adjust as desired
 
 
     # Add group brackets and labels if group_by_column is provided
     if group_by_column:
-        if group_position == 'bottom':
-            bracket_horizontal_y_level = -0.05 + group_label_y_offset # Base offset + user-defined offset
-            label_y_level = -0.15 + group_label_y_offset  # Base offset + user-defined offset
-            bracket_line_offset = -1 * group_bracket_vertical_line_length # Line goes downwards from horizontal line
-        elif group_position == 'middle':
-            # In 'middle' position, group_label_y_offset controls the horizontal line's position
-            bracket_horizontal_y_level = group_label_y_offset 
-            # The label's position is then relative to this horizontal line, considering the vertical line length
-            label_y_level = bracket_horizontal_y_level - group_bracket_vertical_line_length - 0.05
-            
-            bracket_line_offset = group_bracket_vertical_line_length # Line goes upwards from horizontal line
 
-        elif group_position == 'top':
-            # Position above the plot, near the title.
-            # These values are relative to the axis (1.0 is the top of the y-axis)
-            # They might need adjustment based on typical y-axis limits and plot size.
-            bracket_horizontal_y_level = 1.05 + group_label_y_offset
-            label_y_level = 1.15 + group_label_y_offset
-            bracket_line_offset = -1 * group_bracket_vertical_line_length # Line goes downwards from horizontal line
+        # Add group brackets and labels
+        # Use the group_label_y_offset
+        # TO DO: make distance between gruop label and bracket customisable
+        bracket_y_level = -0.05 + group_label_y_offset # Base offset + user-defined offset
+        label_y_level = -0.15 + group_label_y_offset  # Base offset + user-defined offset
 
         for group_name, start_x, end_x in group_label_data:
             # Only draw if the group has more than one member
@@ -519,27 +408,28 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                 if start_x is None or end_x is None: # Skip incomplete group data
                     continue
 
-                # Adjust start and end x to coincide with the x-tick positions
+                # Adjust start and end x to cover the full width of bars in the group
+                # Bars are centered on x_positions, so each bar spans x_pos +/- 0.5
                 effective_start_x = start_x - 0.5
                 effective_end_x = end_x + 0.5
 
                 # Create bracket
+                # TO DO: make left and right vertical line length customisable
                 # Draw left vertical line of bracket
-                ax.plot([effective_start_x, effective_start_x], [bracket_horizontal_y_level, bracket_horizontal_y_level + bracket_line_offset],
+                ax.plot([effective_start_x, effective_start_x], [bracket_y_level, bracket_y_level - 0.05],
                         color='black', transform=ax.get_xaxis_transform(), clip_on=False, linewidth=group_bracket_linewidth)
                 # Draw horizontal line of bracket
-                ax.plot([effective_start_x, effective_end_x], [bracket_horizontal_y_level + bracket_line_offset, bracket_horizontal_y_level + bracket_line_offset],
+                ax.plot([effective_start_x, effective_end_x], [bracket_y_level - 0.05, bracket_y_level - 0.05],
                         color='black', transform=ax.get_xaxis_transform(), clip_on=False, linewidth=group_bracket_linewidth)
                 # Draw right vertical line of bracket
-                ax.plot([effective_end_x, effective_end_x], [bracket_horizontal_y_level, bracket_horizontal_y_level + bracket_line_offset],
+                ax.plot([effective_end_x, effective_end_x], [bracket_y_level, bracket_y_level - 0.05],
                         color='black', transform=ax.get_xaxis_transform(), clip_on=False, linewidth=group_bracket_linewidth)
 
-                # Add group label conditionally
-                if show_group_label:
-                    ax.text((effective_start_x + effective_end_x) / 2, label_y_level,
-                            group_name, ha='center', va='top',
-                            fontsize=group_label_fontsize, rotation=group_label_rotation,
-                            transform=ax.get_xaxis_transform(), clip_on=False)
+                # Add group label
+                ax.text((effective_start_x + effective_end_x) / 2, label_y_level,
+                        group_name, ha='center', va='top',
+                        fontsize=group_label_fontsize, rotation=group_label_rotation,
+                        transform=ax.get_xaxis_transform(), clip_on=False)
 
     # Basic label and font-size setting
     title_suffix = ""
@@ -552,10 +442,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         title_suffix = "Proportions" # Overwrite if normalized
 
     if show_title:
-        if title is not None:
-            plt.title(title, fontsize=title_fontsize)
-        else:
-            plt.title(f'Stacked Bar Plot of {title_suffix} by {meta_column}', fontsize=title_fontsize)
+        plt.title(f'Stacked Bar Plot of {title_suffix} by {meta_column}', fontsize=title_fontsize)
 
     # Set x-axis label
     if show_xlabel:
@@ -574,11 +461,14 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
 
     plt.yticks(fontsize=yticks_fontsize)
     plt.xticks(fontsize=xticks_fontsize)
+    # plot legend
+    # TO DO: if show_legend
     plt.legend(title='Category', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10, title_fontsize=12)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
 
     # --- Saving Plot (if output path is provided) ---
+    # TO DO: if pdf, if png, if all
     if output:
         dir_name = os.path.dirname(output)
         if dir_name and not os.path.exists(dir_name):
