@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os # Import os for directory operations
 
-def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,collapse_focus_values_as: str = None, collapsed_color: str = None, focus_colors_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None):
+def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,collapse_focus_values_as: str = None, collapsed_color: str = None, focus_colors_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None):
     """
     Generates a stacked bar plot with specified columns, collapsing, scaling, and optional error bars
     representing the raw standard deviation.
@@ -387,10 +387,17 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
             bottom_val += height
 
     ax.set_xticks(x_positions)
-    # X-tick labels rotated 90 degrees, centered
-    # TO DO: if rotation != 90, all positions get compromised
-    ax.set_xticklabels(x_labels, rotation=90, ha='center', fontsize=xticks_fontsize) # Use xticks_fontsize
-    ax.tick_params(axis='x', pad=5) # Add some padding to move labels inside if needed, adjust as desired
+    # X-tick labels rotated, adjust horizontal alignment based on rotation
+    if xlabel_rotation == 0:
+        ha = 'center'
+    elif xlabel_rotation > 0 and xlabel_rotation < 90:
+        ha = 'right'
+    elif xlabel_rotation < 0 and xlabel_rotation > -90:
+        ha = 'left'
+    else: # For 90 degrees or other angles
+        ha = 'center' 
+    ax.set_xticklabels(x_labels, rotation=xlabel_rotation, ha=ha, fontsize=xticks_fontsize)
+    ax.tick_params(axis='x', pad=5)
 
 
     # Add group brackets and labels if group_by_column is provided
