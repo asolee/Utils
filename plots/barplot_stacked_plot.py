@@ -100,10 +100,6 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         xlabel_fontsize (float, optional): The font size for the x-axis label. Defaults to 12.
         xlabel_rotation (float, optional): Rotation angle for the x label in degrees. Defaults to 90.
         xticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
-        ha_xticks (float, optional): Horizontal alignment for x-tick labels. 0.0 for left, 0.5 for center, 1.0 for right.
-                                     This will now directly set the 'ha' parameter for set_xticklabels.
-                                     It does not support proportional shifts between 0.0, 0.5, and 1.0;
-                                     instead, it will map to the closest standard alignment. Defaults to None.
         show_ylabel (bool, optional): If True, the y-axis label will be displayed. Defaults to True.
         ylabel (str, optional): Custom label for the y-axis. If provided, overrides default. Defaults to None.
         ylabel_fontsize (float, optional): The font size for the y-axis label. Defaults to 12.
