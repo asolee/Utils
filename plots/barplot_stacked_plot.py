@@ -101,8 +101,9 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         xlabel_rotation (float, optional): Rotation angle for the x label in degrees. Defaults to 90.
         xticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
         ha_xticks (float, optional): Horizontal alignment for x-tick labels. 0.0 for left, 0.5 for center, 1.0 for right.
-                                     For values between these, proportional shift will be attempted.
-                                     Overrides automatic alignment based on `xlabel_rotation`. Defaults to None.
+                                     This will now directly set the 'ha' parameter for set_xticklabels.
+                                     It does not support proportional shifts between 0.0, 0.5, and 1.0;
+                                     instead, it will map to the closest standard alignment. Defaults to None.
         show_ylabel (bool, optional): If True, the y-axis label will be displayed. Defaults to True.
         ylabel (str, optional): Custom label for the y-axis. If provided, overrides default. Defaults to None.
         ylabel_fontsize (float, optional): The font size for the y-axis label. Defaults to 12.
@@ -408,88 +409,30 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
 
     ax.set_xticks(x_positions)
 
-    # --- Custom Horizontal Alignment for X-tick Labels (ha_xticks) ---
-    ha_for_set_xticklabels = 'center' # Default for matplotlib's ha parameter
-    x_offset_in_data_coords = 0.0 # Additional offset to apply per label
+    # --- Automatic alignment based on xlabel_rotation and anchor rotation mode to better visualization ---
+    ha_for_set_xticklabels = 'center' # Default
+    rotation_mode_for_xticklabels = None # Default
 
-    if ha_xticks is not None:
-        if ha_xticks == 0.0:
-            ha_for_set_xticklabels = 'left'
-        elif ha_xticks == 0.5:
-            ha_for_set_xticklabels = 'center'
-        elif ha_xticks == 1.0:
-            ha_for_set_xticklabels = 'right'
-        else:
-            # For intermediate values (e.g., 0.1 to 0.49, or 0.51 to 0.9) an offset will be applied
-            # TO DO: This is not procise and might need fixing for specific fonts/text lengths.
-            if ha_xticks < 0.5:
-                ha_for_set_xticklabels = 'left'
-                # Calculate a normalized offset (0 to 1 scale)
-                normalized_offset = ha_xticks
-            else: # ha_xticks > 0.5
-                ha_for_set_xticklabels = 'right'
-                # If ha_xticks = 0.75, normalized_offset = 0.25 (from right)
-                normalized_offset = 1.0 - ha_xticks
+    # Automatic alignment based on xlabel_rotation
+    if xlabel_rotation == 0:
+        ha_for_set_xticklabels = 'center'
+    elif xlabel_rotation > 0 and xlabel_rotation < 90:
+        ha_for_set_xticklabels = 'right'
+        rotation_mode_for_xticklabels = 'anchor'
+    elif xlabel_rotation < 0 and xlabel_rotation > -90:
+        ha_for_set_xticklabels = 'left'
+        rotation_mode_for_xticklabels = 'anchor'
+    else: # For 90 degrees or other angles
+        ha_for_set_xticklabels = 'right' # Common for 90 deg rotation to keep label below tick
+        rotation_mode_for_xticklabels = 'anchor'
 
-    else:
-        # automatic alignment based on xlabel_rotation
-        if xlabel_rotation == 0:
-            ha_for_set_xticklabels = 'center'
-        elif xlabel_rotation > 0 and xlabel_rotation < 90:
-            ha_for_set_xticklabels = 'right'
-        elif xlabel_rotation < 0 and xlabel_rotation > -90:
-            ha_for_set_xticklabels = 'left'
-        else: # For 90 degrees or other angles
-            ha_for_set_xticklabels = 'center' 
-            
-    # Set the tick labels using the determined string alignment
-    # Store the returned Text objects to modify their positions later if needed
-    x_tick_labels_objects = ax.set_xticklabels(x_labels, 
-                                               rotation=xlabel_rotation, 
-                                               ha=ha_for_set_xticklabels, 
-                                               fontsize=xticks_fontsize)
+    # Set the tick labels using the determined string alignment and rotation mode
+    ax.set_xticklabels(x_labels, 
+                       rotation=xlabel_rotation, 
+                       ha=ha_for_set_xticklabels, 
+                       fontsize=xticks_fontsize,
+                       rotation_mode=rotation_mode_for_xticklabels)
     ax.tick_params(axis='x', pad=xticks_label_pad)
-
-    # Apply fine-tuning offset if ha_xticks is not one of the standard exact values (0.0, 0.5, 1.0)
-    if ha_xticks is not None and ha_xticks not in [0.0, 0.5, 1.0]:
-        # force a draw to get accurate bounding box sizes for labels
-        # This is important for precise text width measurement.
-        fig.canvas.draw() 
-        
-        for i, label_obj in enumerate(x_tick_labels_objects):
-            # Get the bounding box of the rendered text label in display coordinates
-            bbox = label_obj.get_window_extent(renderer=fig.canvas.get_renderer())
-            text_width_display = bbox.width
-
-            # Determine the current anchor point (relative to text itself) based on ha_for_set_xticklabels
-            if ha_for_set_xticklabels == 'left':
-                current_anchor_point_norm = 0.0 # Left edge is at the 'x'
-            elif ha_for_set_xticklabels == 'center':
-                current_anchor_point_norm = 0.5 # Center is at the 'x'
-            elif ha_for_set_xticklabels == 'right':
-                current_anchor_point_norm = 1.0 # Right edge is at the 'x'
-            else:
-                current_anchor_point_norm = 0.5
-
-            # The desired alignment on a 0-1 scale
-            desired_align_norm = ha_xticks
-
-            # Calculate the proportional shift needed in display units
-            shift_proportion_of_width = desired_align_norm - current_anchor_point_norm
-            dx_display_pixels = shift_proportion_of_width * text_width_display
-            
-            # Get the current position of the label (in data coordinates)
-            current_x_data, current_y_data = label_obj.get_position()
-            
-            # Convert the pixel offset to data coordinates
-            offset_data_x, _ = ax.transData.inverted().transform((dx_display_pixels, 0)) - ax.transData.inverted().transform((0, 0))
-
-            # Apply the offset to the label's x position
-            label_obj.set_x(current_x_data + offset_data_x)
-
-            # to prevent unintended rotation behavior.
-            label_obj.set_rotation_mode('anchor')
-
 
     # Add group brackets and labels if group_by_column is provided
     if group_by_column:
