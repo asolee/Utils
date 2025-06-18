@@ -539,6 +539,16 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                             fontsize=group_label_fontsize, rotation=group_label_rotation,
                             transform=ax.get_xaxis_transform(), clip_on=False)
 
+    # Set y-axis limits to ensure white space at the top
+    max_y_value = grouped_df_scaled.sum(axis=1).max()
+    if add_error_bars and grouped_std_scaled is not None:
+        # If error bars are present, include their upper bound in the max_y_value calculation
+        max_y_value += grouped_std_scaled.max().max() # Add the largest standard deviation
+    
+    # Add a buffer 5% of the max value
+    y_upper_limit = max_y_value * 1.05
+    ax.set_ylim(0, y_upper_limit)
+
     # Basic label and font-size setting
     title_suffix = ""
     if scaling == 'none':

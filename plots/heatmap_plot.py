@@ -29,7 +29,7 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
             values across all rows will be removed. Defaults to False.
         output (str, optional): The base path for saving the heatmap. Defaults to "output/".
         metadata_colors_mapping (dict, optional): A dictionary where keys are metadata column names
-            and values are dictionaries mapping specific metadata values to their desired colors.
+            and values are dictionaries mapping specific metadata values to their colors.
             If a color is not provided for a value, it will be automatically assigned.
             Defaults to None.
 
