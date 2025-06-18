@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os # Import os for directory operations
 
-def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, focus_colors_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True):
+def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, value_order: str = 'default', focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, color_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True):
     """
     Generates a stacked bar plot with specified columns, collapsing, scaling, and optional error bars
     representing the raw standard deviation.
@@ -15,6 +15,11 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         dataset (pd.DataFrame): The input pandas DataFrame.
         meta_column (str): The column to be used on the X-axis (only one accepted).
         value_columns (list): A list of columns that represent the values to represent on the Y-axis of the stacked bar.
+                               If `value_order` is 'default', the list will be used to order the categories
+        value_order (str, optional): Determines the order of the values.
+                                     'default': `value_column` list is used to fetch the order
+                                     'median_descending': Median value of category across all `meta_column` is used to descending order.
+                                     'median_ascending': Median value of category across all `meta_column` is used to ascending order.
         focus_value (list, optional): A subset of value_columns to focus on, gouping the excluded ones in a "other" category.
                                        If `collapse_focus_values_as` is None, columns in focus_value
                                        will be plotted individually.
@@ -47,11 +52,9 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                                                    Cannot be named 'others'.
         collapsed_color (str, optional): The color to use for the collapsed category specified by
                                           `collapse_focus_values_as`. If None, a default color will be used.
-        focus_colors_map (dict, optional): A dictionary mapping focus_value category names to specific colors.
-                                            Colors can be matplotlib color names (strings) or RGBA tuples (e.g., (0.1, 0.2, 0.3, 1.0)).
+        color_map (dict, optional): A dictionary mapping category names to specific colors.
+                                            Colors can be matplotlib color names (strings) or RGBA tuples (e.e., (0.1, 0.2, 0.3, 1.0)).
                                             If a category is not in the map, a default color will be used.
-                                            Only applies if `focus_value` is used for individual plotting
-                                            (i.e., `collapse_focus_values_as` is None).
 
         #### ERROR BARS PARAMETERS ####
 
@@ -144,10 +147,12 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     if collapsed_color is not None and not isinstance(collapsed_color, str):
         raise TypeError("'collapsed_color' must be a string representing a color if provided.")
 
-    # Validate focus_colors_map if provided
-    if focus_colors_map is not None and not isinstance(focus_colors_map, dict):
-        raise TypeError("'focus_colors_map' must be a dictionary if provided.")
-    # No specific validation for RGBA format here, matplotlib will handle it when used
+    # Validate color_map if provided
+    if color_map is not None and not isinstance(color_map, dict):
+        raise TypeError("'color_map' must be a dictionary if provided.")
+    if color_map is None: # Ensure it's a dict to avoid errors later
+        color_map = {}
+
 
     # Validate group_by_column if provided
     if group_by_column:
@@ -169,6 +174,10 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     if scaling not in ['none', 'median']:
         raise ValueError("Invalid value for 'scaling'. Choose from 'none' or 'median'.")
 
+    # Validate value_order parameter
+    if value_order not in ['default', 'median_descending', 'median_ascending']:
+        raise ValueError("Invalid value for 'value_order'. Choose from 'default', 'median_descending', or 'median_ascending'.")
+
 
     # --- Data Preparation, handle focus values scenarios ---
     # Create a copy of the relevant columns to avoid modifying the original DataFrame
@@ -180,7 +189,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     # List for columns that will be plotted on Y-axis
     cols_to_plot_y = []
     # Dictionary to map category names to their assigned colors
-    category_colors_map = {}
+    category_colors_internal_map = {} # Internal map to ensure all plotted categories have a color
 
     # Use default matplotlib color and allow repeating the cicle
     prop_cycle = plt.rcParams['axes.prop_cycle']
@@ -192,10 +201,12 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         df_plot[collapse_focus_values_as] = df_plot[focus_value].sum(axis=1)
         cols_to_plot_y.append(collapse_focus_values_as)
         # Assign a color for the collapsed focus_value category
-        if collapsed_color:
-            category_colors_map[collapse_focus_values_as] = collapsed_color
-        else:
-            category_colors_map[collapse_focus_values_as] = default_colors[color_idx % len(default_colors)]
+        if collapsed_color: # Prioritize specific collapsed_color if provided
+            category_colors_internal_map[collapse_focus_values_as] = collapsed_color
+        elif collapse_focus_values_as in color_map: # Then check general color_map
+            category_colors_internal_map[collapse_focus_values_as] = color_map[collapse_focus_values_as]
+        else: # Otherwise use default cycle
+            category_colors_internal_map[collapse_focus_values_as] = default_colors[color_idx % len(default_colors)]
         color_idx += 1
 
         # Determine if there are other columns to collapse into 'others'
@@ -203,18 +214,21 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         if remaining_value_columns_for_others:
             df_plot['others'] = df_plot[remaining_value_columns_for_others].sum(axis=1)
             cols_to_plot_y.append('others')
-            category_colors_map['others'] = 'gray' # 'others' is typically gray
+            if 'others' in color_map:
+                category_colors_internal_map['others'] = color_map['others']
+            else:
+                category_colors_internal_map['others'] = 'gray' # 'others' is typically gray
 
     # Scenario 2: Plot focus_value individually and collapse remaining to 'others'
     elif focus_value:
         cols_to_plot_y.extend(focus_value)
         # Assign individual colors for each focus_value column
         for col in focus_value:
-            # Use color from focus_colors_map if available, otherwise use default cycle
-            if focus_colors_map and col in focus_colors_map:
-                category_colors_map[col] = focus_colors_map[col]
+            # Use color from color_map if available, otherwise use default cycle
+            if col in color_map:
+                category_colors_internal_map[col] = color_map[col]
             else:
-                category_colors_map[col] = default_colors[color_idx % len(default_colors)]
+                category_colors_internal_map[col] = default_colors[color_idx % len(default_colors)]
                 color_idx += 1
 
         # Identify columns to be collapsed into "others"
@@ -222,15 +236,21 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         if others_cols:
             df_plot['others'] = df_plot[others_cols].sum(axis=1)
             cols_to_plot_y.append('others')
-            category_colors_map['others'] = 'gray' # 'others' is typically gray
+            if 'others' in color_map:
+                category_colors_internal_map['others'] = color_map['others']
+            else:
+                category_colors_internal_map['others'] = 'gray' # 'others' is typically gray
 
     # Scenario 3: No focus_value specified, plot all value_columns individually
     else:
         cols_to_plot_y = value_columns
         # Assign individual colors for all value_columns
         for col in value_columns:
-            category_colors_map[col] = default_colors[color_idx % len(default_colors)]
-            color_idx += 1
+            if col in color_map:
+                category_colors_internal_map[col] = color_map[col]
+            else:
+                category_colors_internal_map[col] = default_colors[color_idx % len(default_colors)]
+                color_idx += 1
 
     # Select the columns for the final DataFrame used for grouping
     df_plot_final = df_plot[[meta_column] + cols_to_plot_y]
@@ -272,17 +292,31 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
             grouped_std_scaled = grouped_std.copy() # Use raw std if not normalizing
 
 
-    # --- Determine Plotting Order based on Median Contribution ---
-    # Calculate the median contribution for each category across all groups
-    median_contributions = grouped_df_scaled.median()
-
-    # Sort categories based on their median contribution in descending order (for biggest at bottom)
-    sorted_categories = median_contributions.sort_values(ascending=False).index.tolist()
-
-    # Ensure 'others' is always at the very top (last position in stack)
-    if 'others' in sorted_categories:
-        sorted_categories.remove('others')
-        sorted_categories.append('others')
+    # --- Determine Plotting Order based on value_order parameter ---
+    sorted_categories = []
+    if value_order == 'default':
+        # Use the order as provided in cols_to_plot_y, but ensure 'others' is last if present
+        sorted_categories = [col for col in cols_to_plot_y if col != 'others']
+        if 'others' in cols_to_plot_y:
+            sorted_categories.append('others')
+    elif value_order == 'median_descending':
+        # Calculate the median contribution for each category across all groups
+        median_contributions = grouped_df_scaled.median()
+        # Sort categories based on their median contribution in descending order (for biggest at bottom)
+        sorted_categories = median_contributions.sort_values(ascending=False).index.tolist()
+        # Ensure 'others' is always at the very top (last position in stack)
+        if 'others' in sorted_categories:
+            sorted_categories.remove('others')
+            sorted_categories.append('others')
+    elif value_order == 'median_ascending':
+        # Calculate the median contribution for each category across all groups
+        median_contributions = grouped_df_scaled.median()
+        # Sort categories based on their median contribution in ascending order (for smallest at bottom)
+        sorted_categories = median_contributions.sort_values(ascending=True).index.tolist()
+        # Ensure 'others' is always at the very top (last position in stack)
+        if 'others' in sorted_categories:
+            sorted_categories.remove('others')
+            sorted_categories.append('others')
 
     # Reorder the columns of the scaled DataFrame for plotting
     grouped_df_scaled = grouped_df_scaled[sorted_categories]
@@ -292,7 +326,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         grouped_std_scaled = grouped_std_scaled[sorted_categories]
 
     # Reorder the colors list to match the sorted categories
-    sorted_colors = [category_colors_map[cat] for cat in sorted_categories]
+    final_colors_for_plotting = [category_colors_internal_map[cat] for cat in sorted_categories]
 
 
     # --- Plotting ---
@@ -366,7 +400,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                 y_previous_shades = cumulative_df_scaled[prev_category_name].values
 
             ax.fill_between(x_positions, y_previous_shades, y_cumulative,
-                            color=category_colors_map[category], alpha=connecting_shades_alpha,
+                            color=category_colors_internal_map[category], alpha=connecting_shades_alpha,
                             edgecolor=None, linewidth=0)
 
 
@@ -390,7 +424,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
             label = category if category not in plotted_categories_for_legend else "_nolegend_"
 
             ax.bar(current_x_pos, height=height, bottom=bottom_val,
-                   color=category_colors_map[category],
+                   color=category_colors_internal_map[category],
                    yerr=yerr_val if add_error_bars else None,
                    capsize=4,
                    label=label, # Assign label for legend
