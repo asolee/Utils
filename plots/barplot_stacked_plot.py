@@ -2,8 +2,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os # Import os for directory operations
+import warnings # Import warnings for UserWarning
 
-def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, value_order: str = 'default', focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, color_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True, legend_title: str = None):
+def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, value_order: str = 'default', meta_order: list = None, focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, color_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True, legend_title: str = None):
     """
     Generates a stacked bar plot with specified columns, collapsing, scaling, and optional error bars
     representing the raw standard deviation.
@@ -20,6 +21,8 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                                      'default': `value_column` list is used to fetch the order
                                      'median_descending': Median value of category across all `meta_column` is used to descending order.
                                      'median_ascending': Median value of category across all `meta_column` is used to ascending order.
+        meta_order (list, optional): Determines the order of `meta_column` on X-axis. If None, default order provided in `meta_column` is used.
+                                        If grouping is used, make sure `meta_order` do not create conflicts with consistent grouping.
         focus_value (list, optional): A subset of value_columns to focus on, gouping the excluded ones in a "other" category.
                                        If `collapse_focus_values_as` is None, columns in focus_value
                                        will be plotted individually.
@@ -179,6 +182,18 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     if value_order not in ['default', 'median_descending', 'median_ascending']:
         raise ValueError("Invalid value for 'value_order'. Choose from 'default', 'median_descending', or 'median_ascending'.")
 
+    # Validate meta_order parameter
+    if meta_order is not None and not isinstance(meta_order, list):
+        raise TypeError("Meta_order must be a list of meta_column values.")
+    if meta_order is not None:
+        # Check if all meta_column values in the dataset are present in meta_order
+        dataset_meta_values = dataset[meta_column].unique()
+        if not set(dataset_meta_values).issubset(set(meta_order)):
+            missing_values = set(dataset_meta_values) - set(meta_order)
+            raise ValueError(f"Not all unique values from '{meta_column}' are present in 'meta_order'. Missing: {list(missing_values)}")
+        # Check for duplicates in meta_order
+        if len(meta_order) != len(set(meta_order)):
+            raise ValueError("Meta_order list must not contain duplicate values.")
 
     # --- Data Preparation, handle focus values scenarios ---
     # Create a copy of the relevant columns to avoid modifying the original DataFrame
@@ -330,6 +345,21 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     final_colors_for_plotting = [category_colors_internal_map[cat] for cat in sorted_categories]
 
 
+    # --- Determine Meta-column Order ---
+    final_meta_order = []
+    if meta_order is not None:
+        # Filter meta_order to include only values present in grouped_df_scaled.index
+        filtered_meta_order = [m for m in meta_order if m in grouped_df_scaled.index]
+        grouped_df_scaled = grouped_df_scaled.reindex(filtered_meta_order)
+        if add_error_bars and grouped_std is not None:
+            grouped_std_scaled = grouped_std_scaled.loc[filtered_meta_order, sorted_categories]
+        final_meta_order = filtered_meta_order
+    else: # Default order for meta_column if no meta_order
+        grouped_df_scaled = grouped_df_scaled
+        if add_error_bars and grouped_std is not None:
+            grouped_std_scaled = grouped_std_scaled
+        final_meta_order = grouped_df_scaled.index.tolist()
+
     # --- Plotting ---
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
@@ -337,29 +367,25 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     x_positions = []
     x_labels = []
     current_x = 0
-    previous_group = None
     group_label_data = [] # Stores (group_name, start_x, end_x) for brackets and labels
     group_member_counts = {} # To count members per group
-
+    
     if group_by_column:
-        # Create a mapping from meta_column value to group_by_column value
         internal_grouping_map = dataset.set_index(meta_column)[group_by_column].to_dict()
+        previous_group = None
+        
+        # Check for consistency if group_by_column is used with meta_order
+        if meta_order is not None:
+            group_sequence = [internal_grouping_map.get(m) for m in final_meta_order]
+            # Check if groups are contiguous
+            if group_sequence and any(group_sequence[i] != group_sequence[i-1] and group_sequence[i-1] in group_sequence[i+1:]
+                                      for i in range(1, len(group_sequence))):
+                warnings.warn(f"The provided 'meta_order' results in non-contiguous groups for '{group_by_column}'. "
+                              "Grouping brackets might appear broken or inconsistent. "
+                              "Consider reordering 'meta_order' to keep groups together.", UserWarning)
 
-        # Create a DataFrame to help with sorting and indexing
-        group_df_for_sort = pd.DataFrame(index=grouped_df_scaled.index)
-        group_df_for_sort['group'] = group_df_for_sort.index.map(internal_grouping_map)
-
-        # Sort the meta_column index first by group, then by original value
-        sorted_meta_values = group_df_for_sort.sort_values(by='group').index.tolist()
-        grouped_df_scaled = grouped_df_scaled.loc[sorted_meta_values]
-
-        if add_error_bars and grouped_std is not None:
-             grouped_std_scaled = grouped_std_scaled.loc[sorted_meta_values, sorted_categories]
-
-        # Calculate x-positions for bars and handle grouping
-        for i, meta_val in enumerate(grouped_df_scaled.index):
-            current_group =  internal_grouping_map.get(meta_val)
-            # Count members in the current group
+        for i, meta_val in enumerate(final_meta_order):
+            current_group = internal_grouping_map.get(meta_val)
             group_member_counts[current_group] = group_member_counts.get(current_group, 0) + 1
 
             if previous_group is not None and current_group != previous_group:
