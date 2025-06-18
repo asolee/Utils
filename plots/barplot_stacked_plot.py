@@ -48,6 +48,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         collapsed_color (str, optional): The color to use for the collapsed category specified by
                                           `collapse_focus_values_as`. If None, a default color will be used.
         focus_colors_map (dict, optional): A dictionary mapping focus_value category names to specific colors.
+                                            Colors can be matplotlib color names (strings) or RGBA tuples (e.g., (0.1, 0.2, 0.3, 1.0)).
                                             If a category is not in the map, a default color will be used.
                                             Only applies if `focus_value` is used for individual plotting
                                             (i.e., `collapse_focus_values_as` is None).
@@ -146,6 +147,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     # Validate focus_colors_map if provided
     if focus_colors_map is not None and not isinstance(focus_colors_map, dict):
         raise TypeError("'focus_colors_map' must be a dictionary if provided.")
+    # No specific validation for RGBA format here, matplotlib will handle it when used
 
     # Validate group_by_column if provided
     if group_by_column:
@@ -166,10 +168,6 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     # Validate scaling parameter
     if scaling not in ['none', 'median']:
         raise ValueError("Invalid value for 'scaling'. Choose from 'none' or 'median'.")
-
-    # Validate ha_xticks (allow values outside 0-1 if we're handling them as custom offsets)
-    if ha_xticks is not None and not isinstance(ha_xticks, (int, float)):
-        raise TypeError("ha_xticks must be a float or int if provided.")
 
 
     # --- Data Preparation, handle focus values scenarios ---
