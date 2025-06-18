@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os # Import os for directory operations
 
-def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, value_order: str = 'default', focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, color_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True):
+def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, value_order: str = 'default', focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, color_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None, title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True, legend_title: str = None):
     """
     Generates a stacked bar plot with specified columns, collapsing, scaling, and optional error bars
     representing the raw standard deviation.
@@ -92,7 +92,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
                                                                 `bracket_y_level` to define the extent of the vertical lines.
                                                                 Defaults to 0.05.
         group_position (str, optional): Determines the position of group labels and brackets. default to 'bottom'
-                                        'bottom': Below the x-axis.
+                                        'bottom': Below the x-axis. xlabel_rotation to 90 suggested for better visualization
                                         'middle': between x-ticks and x-label
                                         'top': Above the plot, near the title.
         show_group_label (bool, optional): If True, the group labels will be displayed. Defaults to True.
@@ -112,6 +112,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         title_fontsize (float, optional): The font size for the plot title. Defaults to 14.
         xticks_fontsize (float, optional): The font size for the x-axis tick labels. Defaults to 10.
         yticks_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
+        legend_title (str, optional): Custom name for legend. Default is None
     """
 
     # --- Input Validation ---
@@ -545,7 +546,10 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
 
     plt.yticks(fontsize=yticks_fontsize)
     plt.xticks(fontsize=xticks_fontsize)
-    plt.legend(title='Category', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10, title_fontsize=12)
+    if legend_title is not None:
+        plt.legend(title=legend_title, bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10, title_fontsize=12)
+    else:
+        plt.legend(title='Category',bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10, title_fontsize=12)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
 
