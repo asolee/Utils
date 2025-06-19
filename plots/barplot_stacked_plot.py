@@ -40,6 +40,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         scaling (str, optional): Determines how values are aggregated for each bar.
                                  'none': Values are summed for each meta_column group.
                                  'median': The median of each category's values is used for each meta_column group.
+                                 'mean': The mean of each category's values is used for each meta_column group.
                                  Defaults to 'none'.
 
         #### NORMALIZE DATA ####
@@ -175,8 +176,8 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         raise ValueError("Invalid value for 'group_position'. Choose from 'bottom', 'middle', or 'top'.")
 
     # Validate scaling parameter
-    if scaling not in ['none', 'median']:
-        raise ValueError("Invalid value for 'scaling'. Choose from 'none' or 'median'.")
+    if scaling not in ['none', 'median', 'mean']:
+        raise ValueError("Invalid value for 'scaling'. Choose from 'none', 'median', or 'mean'.")
 
     # Validate value_order parameter
     if value_order not in ['default', 'median_descending', 'median_ascending']:
@@ -285,11 +286,13 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         grouped_std = grouped_std.fillna(0) # Fill NaN standard deviations with 0
 
 
-    # --- Apply Scaling (Sum or Median) ---
+    # --- Apply Scaling (Sum, Median, or Mean) ---
     if scaling == 'none':
         grouped_df = df_plot_final.groupby(meta_column)[cols_to_plot_y].sum()
     elif scaling == 'median':
         grouped_df = df_plot_final.groupby(meta_column)[cols_to_plot_y].median()
+    elif scaling == 'mean':
+        grouped_df = df_plot_final.groupby(meta_column)[cols_to_plot_y].mean()
 
 
     # --- Apply Normalization (optional) ---
@@ -303,7 +306,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         if add_error_bars and grouped_std is not None:
             grouped_std_scaled = grouped_std.div(row_sums, axis=0).fillna(0)
     else:
-        grouped_df_scaled = grouped_df.copy() # Use raw counts/medians if not normalizing
+        grouped_df_scaled = grouped_df.copy() # Use raw counts/medians/means if not normalizing
         if add_error_bars and grouped_std is not None:
             grouped_std_scaled = grouped_std.copy() # Use raw std if not normalizing
 
@@ -555,6 +558,8 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         title_suffix += "Counts"
     elif scaling == 'median':
         title_suffix += "Medians"
+    elif scaling == 'mean':
+        title_suffix += "Means"
 
     if normalize_data:
         title_suffix = "Proportions" # Overwrite if normalized
@@ -577,7 +582,7 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         if ylabel is not None:
             plt.ylabel(ylabel, fontsize=ylabel_fontsize)
         else:
-            ylabel_text = "Proportion" if normalize_data else ( "Count" if scaling == 'none' else "Median Value" )
+            ylabel_text = "Proportion" if normalize_data else ( "Count" if scaling == 'none' else ( "Median Value" if scaling == 'median' else "Mean Value" ))
             plt.ylabel(ylabel_text, fontsize=ylabel_fontsize)
 
     plt.yticks(fontsize=yticks_fontsize)
