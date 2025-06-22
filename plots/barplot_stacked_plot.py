@@ -707,6 +707,9 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     main_legend_title = legend_title if legend_title is not None else 'Category'
     main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left', 
                                 fontsize=10, title_fontsize=12)
+    
+    #control layout
+    plt.tight_layout()
 
     # ~ Saving Plot (if output path is provided) ~ #
     if output:
