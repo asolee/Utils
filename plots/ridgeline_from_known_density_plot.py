@@ -24,6 +24,7 @@ def ridgeline_from_known_density_plot(dataset: pd.DataFrame,
                                   ylabel_fontsize: float = 12,
                                   title_fontsize: float = 14,
                                   xticks_fontsize: float = 10,
+                                  show_yticks: bool = True,
                                   yticks_fontsize: float = 10,
                                   y_ticks_frequency: float = 1,
                                   fill_alpha: float = 0.7,
@@ -63,6 +64,7 @@ def ridgeline_from_known_density_plot(dataset: pd.DataFrame,
         title (str, optional): Custom title. Defaults to None.
         title_fontsize: float (optional): Font size for title. Defaults to 14.
         xticks_fontsize (float, optional): Font size for the X-axis tick labels. Defaults to 10.
+        show_yticks (bool, optional): Show Y-axis ticks and label. Default to
         yticks_fontsize (float, optional): Font size for the Y-axis tick labels. Defaults to 10.
         y_ticks_frequency (float, optional): Frequency of Y-axis ticks. Default to 1
         fill_alpha (float, optional): Transparency of the filled area under the curves. Defaults to 0.7.
@@ -215,7 +217,10 @@ def ridgeline_from_known_density_plot(dataset: pd.DataFrame,
 
         if show_individual_yaxis:
             current_ax.tick_params(axis='x', labelsize=xticks_fontsize)
-            current_ax.tick_params(axis='y', labelsize=yticks_fontsize)
+            if show_yticks:
+                current_ax.tick_params(axis='y', labelsize=yticks_fontsize)
+            else:
+                current_ax.set_yticks([])
             current_ax.spines['right'].set_visible(False)
             current_ax.spines['top'].set_visible(False)
             current_ax.grid(axis='x', linestyle='--', alpha=0.7)
@@ -234,12 +239,16 @@ def ridgeline_from_known_density_plot(dataset: pd.DataFrame,
     # ~ Set x-axis label ~
     if show_xlabel:
         if show_individual_yaxis:
-            fig.supxlabel(xlabel if xlabel is not None else x_column, fontsize=xlabel_fontsize, x = xlabel_va, ha='center')
+            # Place x-label on the bottom-most subplot
+            bottom_ax = axes[-1]
+            bottom_ax.set_xlabel(xlabel if xlabel is not None else x_column, fontsize=xlabel_fontsize, x = xlabel_va, ha='center')
+            # Ensure ticks are visible on the bottom-most axis
+            bottom_ax.tick_params(axis='x', labelbottom=True)
         else:
             ax.set_xlabel(xlabel if xlabel is not None else x_column, fontsize=xlabel_fontsize, x = xlabel_va, ha='center')
     else:
         if show_individual_yaxis:
-            fig.supxlabel('')
+            axes[-1].fig.supxlabel('')
         else:
             ax.set_xlabel('')
 

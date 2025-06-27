@@ -90,7 +90,7 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
             filtered_value_columns.append(col)
     
     if not filtered_value_columns:
-        print(f"Warning: No value columns remain after filtering with min_relative_abundance={min_relative_abundance} and min_sample_percentage={min_sample_percentage}.")
+        print(f"Warning: No value columns remain after filtering with min_relative_abundance={min_relative_abundance} and min_sample_percentage={min_sample_percentage}. Heatmap cannot be generated.")
         return None
     
     value_columns = filtered_value_columns # Update value_columns after initial filtering
@@ -196,8 +196,13 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
     else:
         df_for_heatmap_data = df[value_columns]
 
+    # --- Calculate dynamic figure height based on number of rows (value_columns) ---.
+    base_height = 8  # Minimum height
+    height_per_row = 0.3 # Height contribution per row (value column)
+    dynamic_height = max(base_height, len(value_columns) * height_per_row)
+
     # --- Initialize ClusterMapPlotter ---
-    plt.figure(figsize=(10, 15))
+    plt.figure(figsize=(10, dynamic_height)) # Use dynamic height here
     cm = pch.ClusterMapPlotter(data=df_for_heatmap_data.transpose(),
                                top_annotation=col_ha,
                                col_cluster=True,
@@ -220,13 +225,14 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
         os.makedirs(dir_name)
     
     # Save the plot (PDF)
-    filename = output + ".pdf"
-    plt.savefig(filename, bbox_inches='tight')
+    filename_pdf = output + ".pdf"
+    plt.savefig(filename_pdf, bbox_inches='tight')
 
-    # Save the plot
-    filename = output + ".png"
-    plt.savefig(filename, bbox_inches='tight')
+    # Save the plot (PNG)
+    filename_png = output + ".png"
+    plt.savefig(filename_png, bbox_inches='tight')
     
     plt.show()
 
-    print(f"Heatmap saved to {filename}")
+    print(f"Heatmap saved to {filename_pdf} and {filename_png}")
+

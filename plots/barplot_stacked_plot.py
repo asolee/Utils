@@ -5,7 +5,58 @@ import os
 import warnings
 import matplotlib.patches as mpatches
 
-def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_columns: list, value_order: str = 'default', meta_order: list = None, focus_value: list = None, xlabel_fontsize: float = 12,xticks_fontsize: float = 10,yticks_fontsize: float = 10,xlabel_rotation: float = 90,xticks_label_pad: float = 5,collapse_focus_values_as: str = None, collapsed_color: str = None, color_map: dict = None, add_error_bars: bool = False, add_connecting_shades: bool = False, connecting_shades_alpha: float = 0.15, add_category_border: bool = False, category_border_width: float = 0.5, group_by_column: str = None, group_position: str = 'bottom',group_spacing: float = 0, group_label_rotation: float = 0, group_label_fontsize: int = 12, group_label_y_offset: float = 0.0, group_bracket_linewidth: float = 1.0, group_bracket_vertical_line_length: float = 0.05, fig_width: float = 10, fig_height: float = 7, output: str = None, show_xlabel: bool = True, show_ylabel: bool = True, show_title: bool = True,title: str = None,title_pad: float = 10,title_fontsize: float = 14, ylabel_fontsize: float = 12, normalize_data: bool = False, scaling: str = 'none', xlabel: str = None, ylabel: str = None, show_group_label: bool = True, legend_title: str = None,top_boxes_column: str = None, top_boxes_color_map: dict = None, top_boxes_y_position: float = 1.05, top_boxes_height: float = 0.1, top_boxes_width: float = 1, y_upper_pad: float = 0.05,top_boxes_legend: bool = True, top_boxes_legend_y_pos: float = 1,legend_y_pos: float = 0.5):
+def create_stacked_barplot(dataset: pd.DataFrame,
+                           meta_column: str,
+                           value_columns: list,
+                           value_order: str = 'default',
+                           meta_order: list = None,
+                           focus_value: list = None,
+                           xlabel_fontsize: float = 12,
+                           xticks_fontsize: float = 10,
+                           yticks_fontsize: float = 10,
+                           xlabel_rotation: float = 90,
+                           xticks_label_pad: float = 5,
+                           collapse_focus_values_as: str = None,
+                           collapsed_color: str = None,
+                           color_map: dict = None,
+                           add_error_bars: bool = False,
+                           add_connecting_shades: bool = False,
+                           connecting_shades_alpha: float = 0.15,
+                           add_category_border: bool = False,
+                           category_border_width: float = 0.5,
+                           group_by_column: str = None,
+                           group_position: str = 'bottom',
+                           group_spacing: float = 0,
+                           group_label_rotation: float = 0,
+                           group_label_fontsize: int = 12,
+                           group_label_y_offset: float = 0.0,
+                           group_bracket_linewidth: float = 1.0,
+                           group_bracket_vertical_line_length: float = 0.05,
+                           fig_width: float = 10,
+                           fig_height: float = 7,
+                           output: str = None,
+                           show_xlabel: bool = True,
+                           show_ylabel: bool = True,
+                           show_title: bool = True,
+                           title: str = None,
+                           title_pad: float = 10,
+                           title_fontsize: float = 14,
+                           ylabel_fontsize: float = 12,
+                           normalize_data: bool = False,
+                           scaling: str = 'none',
+                           xlabel: str = None,
+                           ylabel: str = None,
+                           show_group_label: bool = True,
+                           legend_title: str = None,
+                           top_boxes_column: str = None,
+                           top_boxes_color_map: dict = None,
+                           top_boxes_y_position: float = 1.05,
+                           top_boxes_height: float = 0.1,
+                           top_boxes_width: float = 1,
+                           y_upper_pad: float = 0.05,
+                           top_boxes_legend: bool = True,
+                           top_boxes_legend_y_pos: float = 1,
+                           legend_y_pos: float = 0.5):
     """
     Generates a stacked bar plot with specified columns, collapsing, scaling, and optional error bars
     representing the raw standard deviation.
@@ -530,7 +581,8 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
     # Set the tick labels using the determined string alignment and rotation mode
     ax.set_xticklabels(x_labels, 
                        rotation=xlabel_rotation, 
-                       ha=ha_for_set_xticklabels, 
+                       ha=ha_for_set_xticklabels,
+                       va="center",
                        fontsize=xticks_fontsize,
                        rotation_mode=rotation_mode_for_xticklabels)
     ax.tick_params(axis='x', pad=xticks_label_pad)
@@ -726,3 +778,5 @@ def create_stacked_barplot(dataset: pd.DataFrame, meta_column: str, value_column
         print(f"Stacked bar plot saved to {filename_png}")
 
     plt.show()
+
+    #TO DO: add a return value with the final dataset
