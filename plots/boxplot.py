@@ -38,6 +38,7 @@ def create_boxplot(dataset: pd.DataFrame,
                    group_label_y_offset: float = 0.0,
                    group_bracket_linewidth: float = 1.0,
                    group_bracket_vertical_line_length: float = 0.05,
+                   group_bracket_horizontal_line_length: float = 0.5,
                    fig_width: float = 10,
                    fig_height: float = 7,
                    output: str = None,
@@ -58,6 +59,8 @@ def create_boxplot(dataset: pd.DataFrame,
                    show_group_label: bool = True,
                    legend_title: str = None,
                    legend_y_pos: float = 0.5,
+                   hide_top_spine: bool = False,
+                   hide_right_spine: bool = False,
                    y_upper_pad: float = 0.05):
     """
     Generates box plots
@@ -122,6 +125,7 @@ def create_boxplot(dataset: pd.DataFrame,
                                                                 This value will be added to or subtracted from the base
                                                                 {bracket_y_level} to define the extent of the vertical lines.
                                                                 Defaults to 0.05.
+        group_bracket_horizontal_line_length (float, optional): Controls the length of the horizontal lines of the square brackets. Defaults to 0.5.
         group_position (str, optional): Determines the position of group labels and brackets. Default to 'bottom'.
                                         'bottom': Below the x-axis. xlabel_rotation to 90 suggested for better visualization.
                                         'middle': Between x-ticks and x-label.
@@ -145,6 +149,8 @@ def create_boxplot(dataset: pd.DataFrame,
         yticks_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
         legend_title (str, optional): Custom name for legend. Default is None.
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5.
+        hide_top_spine (bool, optional): Hide the top spine. Default to False
+        hide_right_spine (bool, optional): Hide the right spine. Default to False
         y_upper_pad (float, optional): Size of the space between the end of the bar and the upper plot margin. Default to 0.05 (i.e. 5%).
     """
 
@@ -280,6 +286,9 @@ def create_boxplot(dataset: pd.DataFrame,
         final_hue_order = [] #no hue order
 
     # ~ Plotting ~ #
+    #set plot font
+
+    #create figure
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
     # Calculate x-positions for boxes and handle grouping
@@ -347,16 +356,16 @@ def create_boxplot(dataset: pd.DataFrame,
         
         if len(x_pos_list) > 1:
             # The start of the first group
-            start_x_bracket = x_pos_list[0] - (total_width_per_meta_group / 2) - (spacing_between_meta_groups / 2)
+            start_x_bracket = x_pos_list[0] - group_bracket_horizontal_line_length
 
             # The end of the last group
-            end_x_bracket = x_pos_list[-1] + (total_width_per_meta_group / 2) + (spacing_between_meta_groups / 2)
+            end_x_bracket = x_pos_list[-1] + group_bracket_horizontal_line_length
             
         else:
             # Center it around the single point
             single_point_x = x_pos_list[0]
-            start_x_bracket = single_point_x - (total_width_per_meta_group / 2)
-            end_x_bracket = single_point_x + (total_width_per_meta_group / 2)
+            start_x_bracket = single_point_x - group_bracket_horizontal_line_length
+            end_x_bracket = single_point_x + group_bracket_horizontal_line_length
             
         group_label_data.append((group_name, start_x_bracket, end_x_bracket, should_draw_bracket))
 
@@ -536,7 +545,16 @@ def create_boxplot(dataset: pd.DataFrame,
     plt.yticks(fontsize=yticks_fontsize)
     plt.xticks(fontsize=xticks_fontsize)
 
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    ax.set_axisbelow(True)
+    plt.grid(axis='y', linestyle='-', alpha=0.7)
+
+    #Hide top spine
+    if hide_top_spine:
+        ax.spines['top'].set_visible(False)
+
+    #Hide right spine
+    if hide_right_spine:
+        ax.spines['right'].set_visible(False)
 
     # Create legend
     if hue_column:
@@ -559,11 +577,11 @@ def create_boxplot(dataset: pd.DataFrame,
             os.makedirs(dir_name)
 
         filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf)
+        plt.savefig(filename_pdf, format='pdf', dpi=600)
         print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        plt.savefig(filename_png)
+        plt.savefig(filename_png, format='png', dpi=600)
         print(f"Box plot saved to {filename_png}")
 
     plt.show()

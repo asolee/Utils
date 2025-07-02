@@ -7,7 +7,18 @@ import matplotlib.cm as cm # For default colormaps
 import matplotlib.colors as mcolors # For more detailed color mapping
 import numpy as np # Import numpy for checking all zeros
 
-def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, rescale_values=False, min_relative_abundance=0.0, min_sample_percentage=0.0, row_cluster=True, remove_all_zero=False, output="output/", metadata_colors_mapping=None):
+def create_combined_heatmap_from_dataframe(df: pd.DataFrame,
+                                           value_columns: str or list,
+                                           metadata_columns: str or list,
+                                           rescale_values: bool =False,
+                                           min_relative_abundance: float =0.0,
+                                           min_sample_percentage: float =0.0,
+                                           row_cluster: bool =True,
+                                           remove_all_zero: bool =False,
+                                           output: str ="output/",
+                                           metadata_colors_mapping: dict =None,
+                                           #layout
+                                           row_height: float = 6):
     """
     Generates a heatmap from a pandas DataFrame, displaying multiple
     value columns along with multiple metadata columns.
@@ -33,13 +44,16 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
             If a color is not provided for a value, it will be automatically assigned.
             Defaults to None.
 
+        # ~ Layout of heatmap ~ #
+        row_height (float, optional): The height of the rows (the scale can change based on other elements in the plot). Defaults to 6
+
     Returns:
         A single PyComplexHeatmap heatmap. Returns None if the input DataFrame is
             empty or if the specified columns are not found, or if no value columns
             remain after filtering.
     """
 
-    # --- Basic input validation ---
+    # ~ Basic input validation ~ #
     if not isinstance(df, pd.DataFrame):
         print("Error: df must be a pandas DataFrame.")
         return None
@@ -68,14 +82,14 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
         print("Error: metadata_colors_mapping must be a dictionary or None.")
         return None
 
-    # --- Check for the existence of columns in the DataFrame ---
+    # ~ Check for the existence of columns in the DataFrame ~ #
     all_columns = value_columns + metadata_columns
     missing_columns_in_df = [col for col in all_columns if col not in df.columns]
     if missing_columns_in_df:
         print(f"Error: The following columns are not found in the DataFrame: {', '.join(missing_columns_in_df)}")
         return None
 
-    # --- Filter value_columns based on min_relative_abundance and min_sample_percentage ---
+    # ~ Filter value_columns based on min_relative_abundance and min_sample_percentage ~ #
     filtered_value_columns = []
     num_samples = len(df)
     if num_samples == 0:
@@ -95,7 +109,7 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
     
     value_columns = filtered_value_columns # Update value_columns after initial filtering
 
-    # --- Filter out columns with all zero values if remove_all_zero is True ---
+    # ~ Filter out columns with all zero values if remove_all_zero is True ~ #
     if remove_all_zero:
         non_zero_value_columns = []
         removed_zero_columns = []
@@ -123,7 +137,7 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
             return None
 
 
-    # --- Handling missing metadata for annotation and assigning colors ---
+    # ~ Handling missing metadata for annotation and assigning colors ~ #
     df_for_metadata_annotation = df[metadata_columns].copy()
     
     colors_for_annotation = {} 
@@ -186,9 +200,14 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
 
             col_ha = pch.HeatmapAnnotation(df=df_for_metadata_annotation[valid_metadata_columns],
                                            colors=final_colors_for_annotation,
-                                           plot=False, legend=True, legend_gap=5, hgap=0.5, axis=1)
+                                           plot=False,
+                                           legend=True,
+                                           legend_gap=0.5,
+                                           hgap=0,
+                                           axis=1,
+                                           legend_vpad=0)
 
-    # --- Apply rescaling if requested ---
+    # ~ Apply rescaling if requested ~ #
     if rescale_values:
         df_for_heatmap_data = df[value_columns].copy()
         scaler = MinMaxScaler()
@@ -196,12 +215,16 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
     else:
         df_for_heatmap_data = df[value_columns]
 
-    # --- Calculate dynamic figure height based on number of rows (value_columns) ---.
-    base_height = 8  # Minimum height
-    height_per_row = 0.3 # Height contribution per row (value column)
+    # ~ Calculate dynamic figure height based on number of rows (value_columns) ~ #
+    base_height = row_height  # Minimum height
+    height_per_row = 0.1 # Height contribution per row (value column)
     dynamic_height = max(base_height, len(value_columns) * height_per_row)
 
-    # --- Initialize ClusterMapPlotter ---
+    fig_width = 7
+
+    plt.figure(figsize=(fig_width, dynamic_height)) 
+
+    # ~ Initialize ClusterMapPlotter ~ #
     plt.figure(figsize=(10, dynamic_height)) # Use dynamic height here
     cm = pch.ClusterMapPlotter(data=df_for_heatmap_data.transpose(),
                                top_annotation=col_ha,
@@ -209,14 +232,17 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
                                row_cluster=row_cluster,
                                col_split_gap=0.5,
                                row_split_gap=0.8,
-                               label='cell fraction prediction',
+                               label='',
                                row_dendrogram=True,
                                col_dendrogram=True,
                                show_rownames=True,
                                show_colnames=False,
                                tree_kws={'row_cmap': 'Set1'},
-                               verbose=0,
-                               legend_gap=5,
+                               verbose=1,
+                               legend_gap=3,
+                               legend_vpad=-30,
+                               legend_hpad=4,
+                               legend_kws={'color_text':False},
                                cmap='viridis')
     
     # Create the directory if it doesn't exist
@@ -226,11 +252,11 @@ def create_combined_heatmap_from_dataframe(df, value_columns, metadata_columns, 
     
     # Save the plot (PDF)
     filename_pdf = output + ".pdf"
-    plt.savefig(filename_pdf, bbox_inches='tight')
+    plt.savefig(filename_pdf, format='pdf', bbox_inches='tight', dpi=600)
 
     # Save the plot (PNG)
     filename_png = output + ".png"
-    plt.savefig(filename_png, bbox_inches='tight')
+    plt.savefig(filename_png, format='png', bbox_inches='tight', dpi=600)
     
     plt.show()
 

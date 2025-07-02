@@ -32,6 +32,7 @@ def create_stacked_barplot(dataset: pd.DataFrame,
                            group_label_y_offset: float = 0.0,
                            group_bracket_linewidth: float = 1.0,
                            group_bracket_vertical_line_length: float = 0.05,
+                           group_bracket_horizontal_line_length: float = 0.5,
                            fig_width: float = 10,
                            fig_height: float = 7,
                            output: str = None,
@@ -56,6 +57,9 @@ def create_stacked_barplot(dataset: pd.DataFrame,
                            y_upper_pad: float = 0.05,
                            top_boxes_legend: bool = True,
                            top_boxes_legend_y_pos: float = 1,
+                           bar_width: float = 0.8,
+                           hide_top_spine: bool = False,
+                           hide_right_spine: bool = False,
                            legend_y_pos: float = 0.5):
     """
     Generates a stacked bar plot with specified columns, collapsing, scaling, and optional error bars
@@ -163,6 +167,9 @@ def create_stacked_barplot(dataset: pd.DataFrame,
                                                                 This value will be added to or subtracted from the base
                                                                 {bracket_y_level} to define the extent of the vertical lines.
                                                                 Defaults to 0.05.
+        group_bracket_horizontal_line_length (float, optional): Controls the length of the horizontal lines of the square brackets.
+                                                                0.5 mean brackets end will overlap with the next bracket start
+                                                                Defaults to 0.5.
         group_position (str, optional): Determines the position of group labels and brackets. default to 'bottom'
                                         'bottom': Below the x-axis. xlabel_rotation to 90 suggested for better visualization
                                         'middle': between x-ticks and x-label
@@ -187,7 +194,12 @@ def create_stacked_barplot(dataset: pd.DataFrame,
         yticks_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
         legend_title (str, optional): Custom name for legend. Default is None
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5
-        y_upper_pad (float, optional): Size of the space between the end of the bar and the upper plot margin. Default to 0.05 (i.e. 5%) 
+        y_upper_pad (float, optional): Size of the space between the end of the bar and the upper plot margin. Default to 0.05 (i.e. 5%)
+        hide_top_spine (bool, optional): Hide the top spine. Default to False
+        hide_right_spine (bool, optional): Hide the right spine. Default to False
+        #### BAR LAYOUT PARAMETERS
+
+        bar_width (float, optional): width of the bars. Default to 0.8 
     """
 
     # ~ Input Validation ~ #
@@ -486,14 +498,14 @@ def create_stacked_barplot(dataset: pd.DataFrame,
 
             if previous_group is not None and current_group != previous_group:
                 # Store end_x for the previous group 
-                group_label_data[-1] = (group_label_data[-1][0], group_label_data[-1][1], x_positions[-1] + 0.5)
+                group_label_data[-1] = (group_label_data[-1][0], group_label_data[-1][1], x_positions[-1] + group_bracket_horizontal_line_length)
                 # Add spacing between groups
                 current_x += group_spacing
                 group_start_x = current_x # Update the start for the new group
                 # Start new group data
-                group_label_data.append((current_group, group_start_x - 0.5, None)) # Adjust for bar width
+                group_label_data.append((current_group, group_start_x - group_bracket_horizontal_line_length, None)) # Adjust for bar width
             elif not group_label_data: # First item, start the first group
-                group_label_data.append((current_group, current_x - 0.5, None)) # Adjust for bar width
+                group_label_data.append((current_group, current_x - group_bracket_horizontal_line_length, None)) # Adjust for bar width
             previous_group = current_group
 
             x_positions.append(current_x)
@@ -502,7 +514,7 @@ def create_stacked_barplot(dataset: pd.DataFrame,
 
         if group_label_data:
             # Update end_x for the last group 
-            group_label_data[-1] = (group_label_data[-1][0], group_label_data[-1][1], x_positions[-1] + 0.5)
+            group_label_data[-1] = (group_label_data[-1][0], group_label_data[-1][1], x_positions[-1] + group_bracket_horizontal_line_length)
 
     else: # No grouping
         x_positions = np.arange(len(grouped_df_scaled.index))
@@ -551,6 +563,7 @@ def create_stacked_barplot(dataset: pd.DataFrame,
                    color=category_colors_internal_map[category],
                    yerr=yerr_val if add_error_bars else None,
                    capsize=4,
+                   width=0.6,
                    label=label, # Assign label for legend
                    **border_kwargs)
 
@@ -582,7 +595,7 @@ def create_stacked_barplot(dataset: pd.DataFrame,
     ax.set_xticklabels(x_labels, 
                        rotation=xlabel_rotation, 
                        ha=ha_for_set_xticklabels,
-                       va="center",
+                       va="top",
                        fontsize=xticks_fontsize,
                        rotation_mode=rotation_mode_for_xticklabels)
     ax.tick_params(axis='x', pad=xticks_label_pad)
@@ -735,6 +748,14 @@ def create_stacked_barplot(dataset: pd.DataFrame,
         else:
             plt.title(f'Stacked Bar Plot of {title_suffix} by {meta_column}', fontsize=title_fontsize, pad=title_pad)
 
+    #Hide top spine
+    if hide_top_spine:
+        ax.spines['top'].set_visible(False)
+
+    #Hide right spine
+    if hide_right_spine:
+        ax.spines['right'].set_visible(False)
+
     # Set x-axis label
     if show_xlabel:
         if xlabel is not None:
@@ -753,7 +774,8 @@ def create_stacked_barplot(dataset: pd.DataFrame,
     plt.yticks(fontsize=yticks_fontsize)
     plt.xticks(fontsize=xticks_fontsize)
 
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    ax.set_axisbelow(True)
+    plt.grid(axis='y', linestyle='-', alpha=0.7)
 
     # Create the first legend (for stacked bars)
     main_legend_title = legend_title if legend_title is not None else 'Category'
@@ -770,11 +792,11 @@ def create_stacked_barplot(dataset: pd.DataFrame,
             os.makedirs(dir_name)
 
         filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf)
+        plt.savefig(filename_pdf, format='pdf', dpi=600)
         print(f"Stacked bar plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        plt.savefig(filename_png)
+        plt.savefig(filename_png, format='png', dpi=600)
         print(f"Stacked bar plot saved to {filename_png}")
 
     plt.show()
