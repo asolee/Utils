@@ -65,6 +65,9 @@ def create_stacked_barplot(
                            y_tick_label_fontsize: float = 10,
                            x_tick_label_rotation: float = 90,
                            x_ticks_label_pad: float = 5,
+                           # ~ axis tick ~ #
+                           hide_bottom_tick: bool = False,
+                           hide_left_tick: bool = False,
                            # ~ title ~ #
                            show_title: bool = True,
                            title: str = None,
@@ -78,6 +81,8 @@ def create_stacked_barplot(
                            # ~ spine ~ #
                            hide_top_spine: bool = False,
                            hide_right_spine: bool = False,
+                           hide_bottom_spine: bool = False,
+                           hide_left_spine: bool = False,
                            # ~ others ~ #
                            y_upper_pad: float = 0.05):
     """
@@ -209,6 +214,9 @@ def create_stacked_barplot(
         y_tick_label_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
         x_tick_label_rotation (float, optional): Rotation angle for the x label in degrees. Defaults to 90.
         x_ticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
+        # ~ axis tick ~ #
+        hide_bottom_tick (bool, optional): Hide bottom ticks. Defaults to False
+        hide_left_tick (bool, optional): Hide left ticks. Defaults to False
         # ~ title ~ #
         show_title (bool, optional): If True, the plot title will be displayed. Defaults to True.
         title (str, optional): Custom title, if provided, overrides default. Defaults to None.
@@ -222,6 +230,8 @@ def create_stacked_barplot(
         # ~ spine ~ #
         hide_top_spine (bool, optional): Hide the top spine. Default to False
         hide_right_spine (bool, optional): Hide the right spine. Default to False
+        hide_bottom_spine (bool, optional): Hide the bottom spine. Default to False
+        hide_left_spine (bool, optional): Hide the left spine. Default to False
         # ~ others ~ #
         y_upper_pad (float, optional): Size of the space between the end of the bar and the upper plot margin. Default to 0.05 (i.e. 5%)
     """
@@ -780,6 +790,22 @@ def create_stacked_barplot(
     if hide_right_spine:
         ax.spines['right'].set_visible(False)
 
+    #Hide bottom spine
+    if hide_bottom_spine:
+        ax.spines['bottom'].set_visible(False)
+
+    #Hide left spine
+    if hide_left_spine:
+        ax.spines['left'].set_visible(False)
+
+    #Hide bottom ticks
+    if hide_bottom_tick:
+        plt.tick_params(bottom=False)
+
+    #Hide left ticks
+    if hide_left_tick:
+        plt.tick_params(left=False)
+
     # Set x-axis label
     if show_xlabel:
         if xlabel is not None:
@@ -816,11 +842,11 @@ def create_stacked_barplot(
             os.makedirs(dir_name)
 
         filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf, format='pdf', dpi=600)
+        plt.savefig(filename_pdf, format='pdf', dpi=dpi)
         print(f"Stacked bar plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        plt.savefig(filename_png, format='png', dpi=600)
+        plt.savefig(filename_png, format='png', dpi=dpi)
         print(f"Stacked bar plot saved to {filename_png}")
 
     plt.show()
