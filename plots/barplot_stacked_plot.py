@@ -15,6 +15,7 @@ def create_stacked_barplot(
                            output: str = None,
                            fig_width: float = 10,
                            fig_height: float = 7,
+                           dpi: float = 600,
                            #### SCALING OPTIONS ####
                            scaling: str = 'none',
                            #### NORMALIZATION OPTIONS ####
@@ -101,6 +102,7 @@ def create_stacked_barplot(
                                  If provided, the plot will be saved as a PDF and PNG.
         fig_width (float, optional): The width of the figure in inches. Defaults to 10.
         fig_height (float, optional): The height of the figure in inches. Defaults to 7.
+        dpi (float, optional): Dots per inch. Defaults to 600
 
         #### SCALING OPTIONS ####
 
