@@ -6,13 +6,20 @@ import warnings
 import matplotlib.patches as mpatches
 import seaborn as sns
 
-def create_boxplot(dataset: pd.DataFrame,
+def create_boxplot(
+                   #### BASIC INPUT PARAMETERS #### 
+                   dataset: pd.DataFrame,
                    meta_column: str,
                    value_column: str or list,
                    hue_column: str = None,
                    meta_order: list = None,
                    hue_order: list = None,
                    color_map: dict = None,
+                   output: str = None,
+                   fig_width: float = 10,
+                   fig_height: float = 7,
+                   # add dpi
+                   #### BOXPLOT STYLE PARAMETERS ####
                    add_swarmplot: bool = False,
                    swarm_size: float = 3,
                    swarm_alpha: float = 0.5,
@@ -30,6 +37,7 @@ def create_boxplot(dataset: pd.DataFrame,
                    mean_marker_size: float = 8,
                    mean_marker_color: str = 'green',
                    show_mean: bool = False,
+                   #### METADATA GROUPING ####
                    group_by_column: str = None,
                    group_position: str = 'bottom',
                    group_spacing: float = 0,
@@ -39,37 +47,47 @@ def create_boxplot(dataset: pd.DataFrame,
                    group_bracket_linewidth: float = 1.0,
                    group_bracket_vertical_line_length: float = 0.05,
                    group_bracket_horizontal_line_length: float = 0.5,
-                   fig_width: float = 10,
-                   fig_height: float = 7,
-                   output: str = None,
+                   show_group_label: bool = True,                   
+                   #### BOXES PARAMETERS ####
+                   boxes_column: str = None,
+                   boxes_color_map: dict = None,
+                   boxes_y_position: float = 1.05,
+                   boxes_height: float = 0.1,
+                   boxes_width: float = 1,
+                   boxes_legend: bool = True,
+                   boxes_legend_y_pos: float = 1,
+                   #### FONTSIZE AND LAYOUT PARAMETERS ####
+                   # ~ axis label ~ #
                    show_xlabel: bool = True,
                    show_ylabel: bool = True,
+                   xlabel: str = None,
+                   xlabel_fontsize: float = 12,
+                   xlabel_rotation: float = 90,
+                   ylabel: str = None,
+                   ylabel_fontsize: float = 12,
+                   # ~ axis tick label ~ #
+                   xticks_label_pad: float = 5,
+                   xticks_label_fontsize: float = 10,
+                   yticks_label_fontsize: float = 10,
+                   # ~ axis tick ~ #
+                   hide_bottom_tick: bool = False,
+                   hide_left_tick: bool = False,
+                   # ~ title ~ #
                    show_title: bool = True,
                    title: str = None,
                    title_pad: float = 10,
                    title_fontsize: float = 14,
-                   xlabel: str = None,
-                   ylabel: str = None,
-                   xlabel_fontsize: float = 12,
-                   xlabel_rotation: float = 90,
-                   xticks_label_pad: float = 5,
-                   ylabel_fontsize: float = 12,
-                   xticks_fontsize: float = 10,
-                   yticks_fontsize: float = 10,
-                   show_group_label: bool = True,
+                   # ~ legend ~ # 
                    legend_title: str = None,
                    legend_y_pos: float = 0.5,
+                   # ~ spine ~ #
                    hide_top_spine: bool = False,
                    hide_right_spine: bool = False,
-                   #### BOXES PARAMETERS ####
-                    boxes_column: str = None,
-                    boxes_color_map: dict = None,
-                    boxes_y_position: float = 1.05,
-                    boxes_height: float = 0.1,
-                    boxes_width: float = 1,
-                    boxes_legend: bool = True,
-                    boxes_legend_y_pos: float = 1,
-                   y_upper_pad: float = 0.05):
+                   hide_bottom_spine: bool = False,
+                   hide_left_spine: bool = False,
+                   # ~ others ~ #
+                   y_upper_pad: float = 0.05,
+                   ):
     """
     Generates box plots
 
@@ -121,6 +139,10 @@ def create_boxplot(dataset: pd.DataFrame,
         group_by_column (str, optional): The name of a column in the provided dataset to use for grouping {meta_column} values.
                                           If provided, bars will be grouped based on this column's values,
                                           and group labels with brackets will be added below the x-axis. Defaults to None.
+        group_position (str, optional): Determines the position of group labels and brackets. Default to 'bottom'.
+                                        'bottom': Below the x-axis. xlabel_rotation to 90 suggested for better visualization.
+                                        'middle': Between x-ticks and x-label.
+                                        'top': Above the plot, near the title.
         group_spacing (float, optional): The extra space to add between groups of bars if {group_by_column} is used.
                                           Defaults to 0.
         group_label_rotation (float, optional): Rotation angle for the group labels in degrees. Defaults to 0.
@@ -134,13 +156,9 @@ def create_boxplot(dataset: pd.DataFrame,
                                                                 {bracket_y_level} to define the extent of the vertical lines.
                                                                 Defaults to 0.05.
         group_bracket_horizontal_line_length (float, optional): Controls the length of the horizontal lines of the square brackets. Defaults to 0.5.
-        group_position (str, optional): Determines the position of group labels and brackets. Default to 'bottom'.
-                                        'bottom': Below the x-axis. xlabel_rotation to 90 suggested for better visualization.
-                                        'middle': Between x-ticks and x-label.
-                                        'top': Above the plot, near the title.
         show_group_label (bool, optional): If True, the group labels will be displayed. Defaults to True.
 
-                #### BOXES PARAMETERS ####
+        #### BOXES PARAMETERS ####
         
         #TO DO: add more than one line in top_box
         boxes_column (str, optional): Name of the column in the provided dataset to be reppresented as a box above bars.
@@ -156,25 +174,36 @@ def create_boxplot(dataset: pd.DataFrame,
         boxes_legend (bool, optional): Show top_boxes position. Default True
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
 
-        #### FONTSIZE AND VISIBILITY PARAMETERS ####
+        #### FONTSIZE AND LAYOUT PARAMETERS ####
+        # ~ axis label ~ #
         show_xlabel (bool, optional): If True, the x-axis label will be displayed. Defaults to True.
+        show_ylabel (bool, optional): If True, the y-axis label will be displayed. Defaults to True.
         xlabel (str, optional): Custom label for the x-axis. If provided, overrides default. Defaults to None.
         xlabel_fontsize (float, optional): The font size for the x-axis label. Defaults to 12.
         xlabel_rotation (float, optional): Rotation angle for the x label in degrees. Defaults to 90.
-        xticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
-        show_ylabel (bool, optional): If True, the y-axis label will be displayed. Defaults to True.
         ylabel (str, optional): Custom label for the y-axis. If provided, overrides default. Defaults to None.
         ylabel_fontsize (float, optional): The font size for the y-axis label. Defaults to 12.
+        # ~ axis tick label ~ #
+        xticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
+        xticks_label_fontsize (float, optional): The font size for the x-axis tick labels. Defaults to 10.
+        yticks_label_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
+        # ~ axis tick ~ #
+        hide_bottom_tick (bool, optional): Hide bottom ticks. Defaults to False
+        hide_left_tick (bool, optional): Hide left ticks. Defaults to False
+        # ~ title ~ #
         show_title (bool, optional): If True, the plot title will be displayed. Defaults to True.
         title (str, optional): Custom title, if provided, overrides default. Defaults to None.
-        title_fontsize (float, optional): The font size for the plot title. Defaults to 14.
         title_pad (float, optional): Distance between title and plot. Default to 10.
-        xticks_fontsize (float, optional): The font size for the x-axis tick labels. Defaults to 10.
-        yticks_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
+        title_fontsize (float, optional): The font size for the plot title. Defaults to 14.
+        # ~ legend ~ #
         legend_title (str, optional): Custom name for legend. Default is None.
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5.
+        # ~ spine ~ #
         hide_top_spine (bool, optional): Hide the top spine. Default to False
         hide_right_spine (bool, optional): Hide the right spine. Default to False
+        hide_bottom_spine (bool, optional): Hide the bottom spine. Default to False
+        hide_left_spine (bool, optional): Hide the left spine. Default to False
+        # ~ others ~ #
         y_upper_pad (float, optional): Size of the space between the end of the bar and the upper plot margin. Default to 0.05 (i.e. 5%).
     """
 
@@ -510,7 +539,7 @@ def create_boxplot(dataset: pd.DataFrame,
     ax.set_xticklabels(x_tick_labels,
                        rotation=xlabel_rotation,
                        ha=ha_for_set_xticklabels,
-                       fontsize=xticks_fontsize,
+                       fontsize=xticks_label_fontsize,
                        rotation_mode=rotation_mode_for_xticklabels)
     ax.tick_params(axis='x', pad=xticks_label_pad)
 
@@ -653,8 +682,8 @@ def create_boxplot(dataset: pd.DataFrame,
             ylabel_text = value_column if isinstance(value_column, str) else "Value"
             plt.ylabel(ylabel_text, fontsize=ylabel_fontsize)
 
-    plt.yticks(fontsize=yticks_fontsize)
-    plt.xticks(fontsize=xticks_fontsize)
+    plt.yticks(fontsize=yticks_label_fontsize)
+    plt.xticks(fontsize=xticks_label_fontsize)
 
     ax.set_axisbelow(True)
     plt.grid(axis='y', linestyle='-', alpha=0.7)
@@ -666,6 +695,22 @@ def create_boxplot(dataset: pd.DataFrame,
     #Hide right spine
     if hide_right_spine:
         ax.spines['right'].set_visible(False)
+    
+        #Hide bottom spine
+    if hide_bottom_spine:
+        ax.spines['bottom'].set_visible(False)
+
+    #Hide left spine
+    if hide_left_spine:
+        ax.spines['left'].set_visible(False)
+
+    #Hide bottom ticks
+    if hide_bottom_tick:
+        plt.tick_params(bottom=False)
+
+    #Hide left ticks
+    if hide_left_tick:
+        plt.tick_params(left=False)
 
     # Create legend
     if hue_column:

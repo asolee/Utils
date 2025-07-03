@@ -686,7 +686,7 @@ def create_stacked_barplot(
                             fontsize=group_label_fontsize, rotation=group_label_rotation,
                             transform=ax.get_xaxis_transform(), clip_on=False)
                     
-    # ~ Add top boxes above the bars ~ #
+    # ~ Add boxes  ~ #
 
     if boxes_column:
         # Determine the order for unique_top_box_values
