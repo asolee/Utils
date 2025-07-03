@@ -61,6 +61,14 @@ def create_boxplot(dataset: pd.DataFrame,
                    legend_y_pos: float = 0.5,
                    hide_top_spine: bool = False,
                    hide_right_spine: bool = False,
+                   #### BOXES PARAMETERS ####
+                    boxes_column: str = None,
+                    boxes_color_map: dict = None,
+                    boxes_y_position: float = 1.05,
+                    boxes_height: float = 0.1,
+                    boxes_width: float = 1,
+                    boxes_legend: bool = True,
+                    boxes_legend_y_pos: float = 1,
                    y_upper_pad: float = 0.05):
     """
     Generates box plots
@@ -131,6 +139,22 @@ def create_boxplot(dataset: pd.DataFrame,
                                         'middle': Between x-ticks and x-label.
                                         'top': Above the plot, near the title.
         show_group_label (bool, optional): If True, the group labels will be displayed. Defaults to True.
+
+                #### BOXES PARAMETERS ####
+        
+        #TO DO: add more than one line in top_box
+        boxes_column (str, optional): Name of the column in the provided dataset to be reppresented as a box above bars.
+        boxes_color_map (dict, optional): Dictionary mapping unique values from {boxes_column} to colors.
+                                                If None, default colors will be used.
+        boxes_y_position (float, optional): Value to select the box position in the y axis. default to 1.05
+                                                    The value is proportional to the Y-axis scale.
+                                                    It might be useful to harmonize this value with the {y_upper_pad} to have a better visualization.
+        boxes_height (float, optional) : The height of the top boxes. Default to 0.1
+                                                The value is proportional to the Y-axis scale.
+                                                It might be useful to harmonize this value with the {y_upper_pad} to have a better visualization.                                                
+        boxes_width (float, optional): The width of the top boxes. Default to 1
+        boxes_legend (bool, optional): Show top_boxes position. Default True
+        boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
 
         #### FONTSIZE AND VISIBILITY PARAMETERS ####
         show_xlabel (bool, optional): If True, the x-axis label will be displayed. Defaults to True.
@@ -284,6 +308,24 @@ def create_boxplot(dataset: pd.DataFrame,
             warnings.warn(f"The following values in 'hue_order' were not found in '{hue_column}' and will be ignored: {list(missing)}")
     else:
         final_hue_order = [] #no hue order
+
+    # validate top boxes column parameters
+    if boxes_column:
+        if not isinstance(boxes_column, str):
+            raise TypeError("\{boxes_column\} must be a string") 
+        if boxes_column not in dataset.columns:
+            raise ValueError(f"Column {{boxes_column}} not found in the dataset")
+        #Ensure consistency between metadata and top boxes column values
+        top_boxes_consistency_check = dataset[[meta_column,boxes_column]].drop_duplicates()
+        if top_boxes_consistency_check.duplicated(subset=[meta_column]).any():
+            conflicting_meta_values = top_boxes_consistency_check[top_boxes_consistency_check.duplicated(subset=[meta_column])][meta_column].to_list()
+            raise ValueError(f"Each value in {{meta_column}} should correspond to a unique value in {{boxes_column}}, conflicting {{meta_column}} values: {conflicting_meta_values}")
+        #Validate {boxes_color_map}
+        if boxes_color_map is not None and not isinstance(boxes_color_map, dict):
+            raise TypeError("\{boxes_color_map\} must be a dictionary if provided")
+        if boxes_color_map is None:
+            boxes_color_map = {}
+
 
     # ~ Plotting ~ #
     #set plot font
@@ -504,6 +546,75 @@ def create_boxplot(dataset: pd.DataFrame,
                         group_name, ha='center', va='top',
                         fontsize=group_label_fontsize, rotation=group_label_rotation,
                         transform=ax.get_xaxis_transform(), clip_on=False)
+                
+    # ~ Add boxes ~ #
+
+    if boxes_column:
+        # Determine the order for unique_top_box_values
+        if boxes_color_map:
+            # Use keys from boxes_color_map for order, then add any remaining unique values
+            ordered_unique_top_box_values = list(boxes_color_map.keys())
+            # Add any unique values from the column that aren't in the color map
+            for val in dataset[boxes_column].unique():
+                if val not in ordered_unique_top_box_values:
+                    ordered_unique_top_box_values.append(val)
+        else:
+            # If no color map is provided, use the natural order of unique values from the dataset
+            ordered_unique_top_box_values = dataset[boxes_column].unique().tolist()
+
+
+        # Populate missing colors in boxes_color_map
+        current_top_box_color_idx = 0
+        final_boxes_color_map = {}
+        for val in ordered_unique_top_box_values:
+            if val in boxes_color_map:
+                final_boxes_color_map[val] = boxes_color_map[val]
+            else:
+                final_boxes_color_map[val] = default_colors[current_top_box_color_idx % len(default_colors)]
+                current_top_box_color_idx += 1
+            
+        # Create a mapping from meta_column values
+        meta_to_top_box_value = dataset.set_index(meta_column)[boxes_column].to_dict()
+
+        for i, meta_val in enumerate(final_meta_order):
+            box_value = meta_to_top_box_value.get(meta_val)
+            if box_value is not None:
+                box_color = final_boxes_color_map.get(box_value, 'grey')
+                # Calculate box position relative to the bar X-postion
+                print(total_width_per_meta_group + spacing_between_meta_groups)
+                adjusted_boxes_width = boxes_width * (total_width_per_meta_group + spacing_between_meta_groups)
+                box_x_left = x_positions_meta[i] - (adjusted_boxes_width / 2.0)
+
+                # Add the rectangle patch
+                rect = mpatches.Rectangle((box_x_left, boxes_y_position),
+                                          adjusted_boxes_width,
+                                          boxes_height,
+                                          facecolor=box_color,
+                                          edgecolor='black',
+                                          linewidth=0.5,
+                                          transform=ax.get_xaxis_transform(),
+                                          clip_on=False)
+                
+                ax.add_patch(rect)
+
+        if boxes_legend:
+        
+            # Add a separate legend for the top boxes
+            top_box_legend_handles = []
+            for val in ordered_unique_top_box_values: # Iterate through ordered values for sorted legend
+                color = final_boxes_color_map.get(val, 'grey')
+                top_box_legend_handles.append(mpatches.Patch(color=color, label=str(val)))
+
+            # Create the second legend (for top boxes)
+            top_box_legend = ax.legend(handles=top_box_legend_handles,
+                                        title=boxes_column,
+                                        bbox_to_anchor=(1.05, boxes_legend_y_pos),
+                                        loc='center left',
+                                        fontsize=10,
+                                        title_fontsize=12)
+        
+            # Manually add the first legend back to the figure, as the second one might overwrite it
+            ax.add_artist(top_box_legend)
 
     # Set y-axis limits
     min_y = df_plot[value_column].min()

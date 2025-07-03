@@ -159,7 +159,7 @@ def create_stacked_barplot(
         category_border_width (float, optional): The width of the black line around categories if {add_category_border} is True.
                                                  Defaults to 0.5.
 
-        #### TOP BOXES PARAMETERS ####
+        #### BOXES PARAMETERS ####
         
         #TO DO: add more than one line in top_box
         boxes_column (str, optional): Name of the column in the provided dataset to be reppresented as a box above bars.
