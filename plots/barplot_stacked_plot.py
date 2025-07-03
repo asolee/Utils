@@ -4,6 +4,7 @@ import numpy as np
 import os
 import warnings
 import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
 
 def create_stacked_barplot(
                            #### BASIC INPUT PARAMETERS ####
@@ -41,6 +42,9 @@ def create_stacked_barplot(
                            boxes_width: float = 1,
                            boxes_borderwidth: float = 0.5,
                            boxes_legend: bool = True,
+                           boxes_legend_pos: str = None,
+                           boxes_legend_title: str = None, 
+                           boxes_legend_fontsize: float = 15,
                            boxes_legend_y_pos: float = 1,
                            #### METADATA GROUPING ####
                            group_by_column: str = None,
@@ -165,16 +169,21 @@ def create_stacked_barplot(
         #TO DO: add more than one line in top_box
         boxes_column (str, optional): Name of the column in the provided dataset to be reppresented as a box above bars.
         boxes_color_map (dict, optional): Dictionary mapping unique values from {boxes_column} to colors.
-                                                If None, default colors will be used.
-        boxes_y_position (float, optional): Value to select the box position in the y axis. default to 1.05
+                                                If None, defaults colors will be used.
+        boxes_y_position (float, optional): Value to select the box position in the y axis. defaults to 1.05
                                                     The value is proportional to the Y-axis scale.
                                                     It might be useful to harmonize this value with the {y_upper_pad} to have a better visualization.
-        boxes_height (float, optional) : The height of the top boxes. Default to 0.1
+        boxes_height (float, optional) : The height of the top boxes. Defaults to 0.1
                                                 The value is proportional to the Y-axis scale.
                                                 It might be useful to harmonize this value with the {y_upper_pad} to have a better visualization.                                                
-        boxes_width (float, optional): The width of the top boxes. Default to 1
+        boxes_width (float, optional): The width of the top boxes. Defaults to 1
         boxes_borderwidth (float, optional): linewidth for boxes. Defaults to 0.5
-        boxes_legend (bool, optional): Show top_boxes position. Default True
+        boxes_legend (bool, optional): Show top_boxes position. Defaults True
+        boxes_legend_pos (str, optional): Custom position for boxes legend.
+                                            "bottom": will show a one line legend in the bottom part of the figure.
+                                            Defaults to None
+        boxes_legend_title (str, ptional): Boxes legend Title. Default to {boxes_column} 
+        boxes_legend_fontsize (float, optional): font size of boxes legend element text. Defaults to 15
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
 
         #### METADATA GROUPING ####
@@ -748,7 +757,12 @@ def create_stacked_barplot(
                 ax.add_patch(rect)
 
         if boxes_legend:
-        
+            
+            if boxes_legend_title is not None:
+                legend_title_str = boxes_legend_title
+            else:
+                legend_title_str = boxes_column
+
             # Add a separate legend for the top boxes
             top_box_legend_handles = []
             for val in ordered_unique_top_box_values: # Iterate through ordered values for sorted legend
@@ -756,15 +770,47 @@ def create_stacked_barplot(
                 top_box_legend_handles.append(mpatches.Patch(color=color, label=str(val)))
 
             # Create the second legend (for top boxes)
-            top_box_legend = ax.legend(handles=top_box_legend_handles,
-                                        title=boxes_column,
+            if boxes_legend_pos == "bottom":
+
+                # Initialize lists for all legend elements
+                all_legend_handles = []
+                all_legend_labels = []
+
+                all_legend_handles.append(mlines.Line2D([], [], color='none', marker='None', linestyle='None'))
+                replacements = str.maketrans({"_": "\_", " ": "\ "})
+                all_legend_labels.append(r"$\mathbf{" + legend_title_str.translate(replacements) + r"}$")
+
+                # Add the colored square patches and their labels for the actual categories
+                for val in ordered_unique_top_box_values:
+                    color = final_boxes_color_map.get(val, 'grey')
+                    all_legend_handles.append(mpatches.Patch(color=color)) # Patch for the square color
+                    all_legend_labels.append(str(val)) # Label for the square
+
+                top_box_legend = ax.legend(
+                    handles=all_legend_handles,
+                    labels=all_legend_labels,
+                    bbox_to_anchor=(0.5, boxes_legend_y_pos),
+                    loc='lower center', # Position at the bottom center
+                    ncol=len(all_legend_labels), # Ensure all elements are on a single row
+                    fontsize=boxes_legend_fontsize,
+                    title_fontsize=0,
+                    frameon=False, # No frame around the legend
+                    handlelength=0.7, # Default handle length for patches
+                    handletextpad=0.5, # Space between handle (square) and its text
+                    columnspacing=0.5 # Compact spacing between legend columns
+                )
+            else:
+            
+                top_box_legend = ax.legend(handles=top_box_legend_handles,
+                                        title=legend_title_str,
                                         bbox_to_anchor=(1.05, boxes_legend_y_pos),
                                         loc='center left',
-                                        fontsize=10,
-                                        title_fontsize=12)
+                                        fontsize=boxes_legend_fontsize,
+                                        title_fontsize=boxes_legend_fontsize)
         
             # Manually add the first legend back to the figure, as the second one might overwrite it
             ax.add_artist(top_box_legend)
+            t2 = ax.add_artist(top_box_legend)
 
 
     # Set y-axis limits to ensure white space at the top
@@ -855,6 +901,8 @@ def create_stacked_barplot(
     main_legend_title = legend_title if legend_title is not None else 'Category'
     main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left', 
                                 fontsize=10, title_fontsize=12)
+    ax.add_artist(main_legend)
+    t1 = ax.add_artist(main_legend)
     
     #control layout
     plt.tight_layout()
@@ -866,12 +914,18 @@ def create_stacked_barplot(
             os.makedirs(dir_name)
 
         filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight')
-        print(f"Stacked bar plot saved to {filename_pdf}")
+        if boxes_legend_pos == "bottom":
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+        else:
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+        print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight')
-        print(f"Stacked bar plot saved to {filename_png}")
+        if boxes_legend_pos == "bottom":
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+        else:
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+        print(f"Box plot saved to {filename_png}")
 
     plt.show()
 

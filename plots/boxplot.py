@@ -672,7 +672,7 @@ def create_boxplot(
                 replacements = str.maketrans({"_": "\_", " ": "\ "})
                 all_legend_labels.append(r"$\mathbf{" + legend_title_str.translate(replacements) + r"}$")
 
-                # 2. Add the colored square patches and their labels for the actual categories
+                # Add the colored square patches and their labels for the actual categories
                 for val in ordered_unique_top_box_values:
                     color = final_boxes_color_map.get(val, 'grey')
                     all_legend_handles.append(mpatches.Patch(color=color)) # Patch for the square color
@@ -702,6 +702,7 @@ def create_boxplot(
         
             # Manually add the first legend back to the figure, as the second one might overwrite it
             ax.add_artist(top_box_legend)
+            t2 = ax.add_artist(top_box_legend)
 
     # Set y-axis limits
     min_y = df_plot[value_column].min()
@@ -783,15 +784,19 @@ def create_boxplot(
     if hue_column:
         legend_handles = [mpatches.Patch(color=color, label=label) for label, color in box_colors_for_legend.items()]
         main_legend_title = legend_title if legend_title is not None else hue_column
-        ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left',
+        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left',
                   fontsize=10, title_fontsize=12)
+        ax.add_artist(plot_legend)
+        t1 = ax.add_artist(plot_legend)
     elif isinstance(value_column, list): # If melted but no explicit hue, use the melted 'category' column
         legend_handles = [mpatches.Patch(color=color, label=label) for label, color in final_color_map.items()]
         main_legend_title = legend_title if legend_title is not None else 'Category'
-        ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left',
+        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left',
                   fontsize=10, title_fontsize=12)
+        ax.add_artist(plot_legend)
+        t1 = ax.add_artist(plot_legend)
     
-    fig.tight_layout()
+    #fig.tight_layout()
 
     # ~ Saving Plot ~ #
     if output:
@@ -800,11 +805,17 @@ def create_boxplot(
             os.makedirs(dir_name)
 
         filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight')
+        if boxes_legend_pos == "bottom":
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+        else:
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
         print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight')
+        if boxes_legend_pos == "bottom":
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+        else:
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
         print(f"Box plot saved to {filename_png}")
 
     plt.show()
