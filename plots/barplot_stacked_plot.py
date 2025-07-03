@@ -39,6 +39,7 @@ def create_stacked_barplot(
                            boxes_y_position: float = 1.05,
                            boxes_height: float = 0.1,
                            boxes_width: float = 1,
+                           boxes_borderwidth: float = 0.5,
                            boxes_legend: bool = True,
                            boxes_legend_y_pos: float = 1,
                            #### METADATA GROUPING ####
@@ -172,6 +173,7 @@ def create_stacked_barplot(
                                                 The value is proportional to the Y-axis scale.
                                                 It might be useful to harmonize this value with the {y_upper_pad} to have a better visualization.                                                
         boxes_width (float, optional): The width of the top boxes. Default to 1
+        boxes_borderwidth (float, optional): linewidth for boxes. Defaults to 0.5
         boxes_legend (bool, optional): Show top_boxes position. Default True
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
 
@@ -728,7 +730,7 @@ def create_stacked_barplot(
                                           boxes_height,
                                           facecolor=box_color,
                                           edgecolor='black',
-                                          linewidth=0.5,
+                                          linewidth=boxes_borderwidth,
                                           transform=ax.get_xaxis_transform(),
                                           clip_on=False)
                 

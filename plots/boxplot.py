@@ -54,6 +54,7 @@ def create_boxplot(
                    boxes_y_position: float = 1.05,
                    boxes_height: float = 0.1,
                    boxes_width: float = 1,
+                   boxes_borderwidth: float = 0.5,
                    boxes_legend: bool = True,
                    boxes_legend_y_pos: float = 1,
                    #### FONTSIZE AND LAYOUT PARAMETERS ####
@@ -163,15 +164,16 @@ def create_boxplot(
         #TO DO: add more than one line in top_box
         boxes_column (str, optional): Name of the column in the provided dataset to be reppresented as a box above bars.
         boxes_color_map (dict, optional): Dictionary mapping unique values from {boxes_column} to colors.
-                                                If None, default colors will be used.
-        boxes_y_position (float, optional): Value to select the box position in the y axis. default to 1.05
+                                                If None, defaults colors will be used.
+        boxes_y_position (float, optional): Value to select the box position in the y axis. defaults to 1.05
                                                     The value is proportional to the Y-axis scale.
                                                     It might be useful to harmonize this value with the {y_upper_pad} to have a better visualization.
-        boxes_height (float, optional) : The height of the top boxes. Default to 0.1
+        boxes_height (float, optional) : The height of the top boxes. Defaults to 0.1
                                                 The value is proportional to the Y-axis scale.
                                                 It might be useful to harmonize this value with the {y_upper_pad} to have a better visualization.                                                
-        boxes_width (float, optional): The width of the top boxes. Default to 1
-        boxes_legend (bool, optional): Show top_boxes position. Default True
+        boxes_width (float, optional): The width of the top boxes. Defaults to 1
+        boxes_borderwidth (float, optional): linewidth for boxes. Defaults to 0.5
+        boxes_legend (bool, optional): Show top_boxes position. Defaults True
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
 
         #### FONTSIZE AND LAYOUT PARAMETERS ####
@@ -610,7 +612,6 @@ def create_boxplot(
             if box_value is not None:
                 box_color = final_boxes_color_map.get(box_value, 'grey')
                 # Calculate box position relative to the bar X-postion
-                print(total_width_per_meta_group + spacing_between_meta_groups)
                 adjusted_boxes_width = boxes_width * (total_width_per_meta_group + spacing_between_meta_groups)
                 box_x_left = x_positions_meta[i] - (adjusted_boxes_width / 2.0)
 
@@ -620,7 +621,7 @@ def create_boxplot(
                                           boxes_height,
                                           facecolor=box_color,
                                           edgecolor='black',
-                                          linewidth=0.5,
+                                          linewidth=boxes_borderwidth,
                                           transform=ax.get_xaxis_transform(),
                                           clip_on=False)
                 
