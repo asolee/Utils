@@ -434,6 +434,7 @@ def create_stacked_barplot(
         grouped_std = df_plot_final.groupby(meta_column)[cols_to_plot_y].std()
         grouped_std = grouped_std.fillna(0) # Fill NaN standard deviations with 0
 
+    dataframe_before_scaling = df_plot_final
 
     # ~ Apply Scaling (Sum, Median, or Mean) ~ #
     if scaling == 'none':
@@ -443,6 +444,7 @@ def create_stacked_barplot(
     elif scaling == 'mean':
         grouped_df = df_plot_final.groupby(meta_column)[cols_to_plot_y].mean()
 
+    dataframe_after_scaling = grouped_df
 
     # ~ Apply Normalization (optional) ~ #
     if normalize_data:
@@ -929,4 +931,4 @@ def create_stacked_barplot(
 
     plt.show()
 
-    #TO DO: add a return value with the final dataset
+    return dataframe_before_scaling, dataframe_after_scaling
