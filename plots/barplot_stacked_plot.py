@@ -634,7 +634,18 @@ def create_stacked_barplot(
                        va="top",
                        fontsize=x_tick_label_fontsize,
                        rotation_mode=rotation_mode_for_xticklabels)
-    ax.tick_params(axis='x', pad=x_ticks_label_pad)
+    
+    #set robust y pad
+    y_transform = ax.get_yaxis_transform()
+    #tranform points to proper axis coordinates
+    y_display_at_zero = y_transform.transform((0, 0))[1] 
+    y_display_at_padding = y_transform.transform((0, x_ticks_label_pad))[1]
+    # Let's get the figure's dpi to make the conversion more accurate
+    fig_dpi = fig.dpi
+    # Convert pixels to points: pixels * (72 / dpi)
+    padding_in_pixels = abs(y_display_at_padding - y_display_at_zero)
+    xticks_label_pad_calculated = padding_in_pixels * (72 / fig_dpi)
+    ax.tick_params(axis='x', pad=xticks_label_pad_calculated)
 
     # Add group brackets and labels if group_by_column is provided
     if group_by_column:
@@ -779,10 +790,21 @@ def create_stacked_barplot(
         title_suffix = "Proportions" # Overwrite if normalized
 
     if show_title:
+        # Set titles and labels
+        #tranform points to proper axis coordinates
+        y_display_at_zero = y_transform.transform((0, 0))[1] 
+        y_display_at_padding = y_transform.transform((0, title_pad))[1]
+        # Let's get the figure's dpi to make the conversion more accurate
+        fig_dpi = fig.dpi
+        # Convert pixels to points: pixels * (72 / dpi)
+        padding_in_pixels = abs(y_display_at_padding - y_display_at_zero)
+        title_label_pad_calculated = padding_in_pixels * (72 / fig_dpi)
+        ax.tick_params(axis='x', pad=xticks_label_pad_calculated)
+
         if title is not None:
-            plt.title(title, fontsize=title_fontsize,pad=title_pad)
+            plt.title(title, fontsize=title_fontsize,pad=title_label_pad_calculated)
         else:
-            plt.title(f'Stacked Bar Plot of {title_suffix} by {meta_column}', fontsize=title_fontsize, pad=title_pad)
+            plt.title(f'Stacked Bar Plot of {title_suffix} by {meta_column}', fontsize=title_fontsize, pad=title_label_pad_calculated)
 
     #Hide top spine
     if hide_top_spine:
@@ -844,11 +866,11 @@ def create_stacked_barplot(
             os.makedirs(dir_name)
 
         filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf, format='pdf', dpi=dpi)
+        plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight')
         print(f"Stacked bar plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        plt.savefig(filename_png, format='png', dpi=dpi)
+        plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight')
         print(f"Stacked bar plot saved to {filename_png}")
 
     plt.show()

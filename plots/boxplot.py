@@ -5,6 +5,7 @@ import os
 import warnings
 import matplotlib.patches as mpatches
 import seaborn as sns
+import matplotlib.lines as mlines
 
 def create_boxplot(
                    #### BASIC INPUT PARAMETERS #### 
@@ -18,7 +19,7 @@ def create_boxplot(
                    output: str = None,
                    fig_width: float = 10,
                    fig_height: float = 7,
-                   # add dpi
+                   dpi: float = 600,
                    #### BOXPLOT STYLE PARAMETERS ####
                    add_swarmplot: bool = False,
                    swarm_size: float = 3,
@@ -56,6 +57,9 @@ def create_boxplot(
                    boxes_width: float = 1,
                    boxes_borderwidth: float = 0.5,
                    boxes_legend: bool = True,
+                   boxes_legend_pos: str = None,
+                   boxes_legend_title: str = None, 
+                   boxes_legend_fontsize: float = 15,
                    boxes_legend_y_pos: float = 1,
                    #### FONTSIZE AND LAYOUT PARAMETERS ####
                    # ~ axis label ~ #
@@ -115,6 +119,7 @@ def create_boxplot(
                                  If provided, the plot will be saved as a PDF and PNG.
         fig_width (float, optional): The width of the figure in inches. Defaults to 10.
         fig_height (float, optional): The height of the figure in inches. Defaults to 7.
+        dpi (float, optional): Dots per inch. Defaults to 600
 
         #### BOXPLOT STYLE PARAMETERS ####
         add_swarmplot (bool, optional): If True, adds a swarm plot on top of the box plots to show
@@ -174,6 +179,11 @@ def create_boxplot(
         boxes_width (float, optional): The width of the top boxes. Defaults to 1
         boxes_borderwidth (float, optional): linewidth for boxes. Defaults to 0.5
         boxes_legend (bool, optional): Show top_boxes position. Defaults True
+        boxes_legend_pos (str, optional): Custom position for boxes legend.
+                                            "bottom": will show a one line legend in the bottom part of the figure.
+                                            Defaults to None
+        boxes_legend_title (str, ptional): Boxes legend Title. Default to {boxes_column} 
+        boxes_legend_fontsize (float, optional): font size of boxes legend element text. Defaults to 15
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
 
         #### FONTSIZE AND LAYOUT PARAMETERS ####
@@ -362,7 +372,7 @@ def create_boxplot(
     #set plot font
 
     #create figure
-    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    fig, ax = plt.subplots(figsize=(fig_width, fig_height),constrained_layout = True)
 
     # Calculate x-positions for boxes and handle grouping
     x_positions_meta = [] # Center of each meta group
@@ -543,7 +553,18 @@ def create_boxplot(
                        ha=ha_for_set_xticklabels,
                        fontsize=xticks_label_fontsize,
                        rotation_mode=rotation_mode_for_xticklabels)
-    ax.tick_params(axis='x', pad=xticks_label_pad)
+    
+    #set robust y pad
+    y_transform = ax.get_yaxis_transform()
+    #tranform points to proper axis coordinates
+    y_display_at_zero = y_transform.transform((0, 0))[1] 
+    y_display_at_padding = y_transform.transform((0, xticks_label_pad))[1]
+    # Let's get the figure's dpi to make the conversion more accurate
+    fig_dpi = fig.dpi
+    # Convert pixels to points: pixels * (72 / dpi)
+    padding_in_pixels = abs(y_display_at_padding - y_display_at_zero)
+    xticks_label_pad_calculated = padding_in_pixels * (72 / fig_dpi)
+    ax.tick_params(axis='x', pad=xticks_label_pad_calculated)
 
     # Add group brackets and labels
     if group_by_column:
@@ -628,7 +649,12 @@ def create_boxplot(
                 ax.add_patch(rect)
 
         if boxes_legend:
-        
+            
+            if boxes_legend_title is not None:
+                legend_title_str = boxes_legend_title
+            else:
+                legend_title_str = boxes_column
+
             # Add a separate legend for the top boxes
             top_box_legend_handles = []
             for val in ordered_unique_top_box_values: # Iterate through ordered values for sorted legend
@@ -636,12 +662,43 @@ def create_boxplot(
                 top_box_legend_handles.append(mpatches.Patch(color=color, label=str(val)))
 
             # Create the second legend (for top boxes)
-            top_box_legend = ax.legend(handles=top_box_legend_handles,
-                                        title=boxes_column,
+            if boxes_legend_pos == "bottom":
+
+                # Initialize lists for all legend elements
+                all_legend_handles = []
+                all_legend_labels = []
+
+                all_legend_handles.append(mlines.Line2D([], [], color='none', marker='None', linestyle='None'))
+                replacements = str.maketrans({"_": "\_", " ": "\ "})
+                all_legend_labels.append(r"$\mathbf{" + legend_title_str.translate(replacements) + r"}$")
+
+                # 2. Add the colored square patches and their labels for the actual categories
+                for val in ordered_unique_top_box_values:
+                    color = final_boxes_color_map.get(val, 'grey')
+                    all_legend_handles.append(mpatches.Patch(color=color)) # Patch for the square color
+                    all_legend_labels.append(str(val)) # Label for the square
+
+                top_box_legend = ax.legend(
+                    handles=all_legend_handles,
+                    labels=all_legend_labels,
+                    bbox_to_anchor=(0.5, boxes_legend_y_pos),
+                    loc='lower center', # Position at the bottom center
+                    ncol=len(all_legend_labels), # Ensure all elements are on a single row
+                    fontsize=boxes_legend_fontsize,
+                    title_fontsize=0,
+                    frameon=False, # No frame around the legend
+                    handlelength=0.7, # Default handle length for patches
+                    handletextpad=0.5, # Space between handle (square) and its text
+                    columnspacing=0.5 # Compact spacing between legend columns
+                )
+            else:
+            
+                top_box_legend = ax.legend(handles=top_box_legend_handles,
+                                        title=legend_title_str,
                                         bbox_to_anchor=(1.05, boxes_legend_y_pos),
                                         loc='center left',
-                                        fontsize=10,
-                                        title_fontsize=12)
+                                        fontsize=boxes_legend_fontsize,
+                                        title_fontsize=boxes_legend_fontsize)
         
             # Manually add the first legend back to the figure, as the second one might overwrite it
             ax.add_artist(top_box_legend)
@@ -661,14 +718,23 @@ def create_boxplot(
         x_padding = (total_width_per_meta_group + spacing_between_meta_groups) / 2
         ax.set_xlim(min_x_pos - x_padding, max_x_pos + x_padding)
 
-
-    # Set titles and labels
     if show_title:
+        # Set titles and labels
+        #tranform points to proper axis coordinates
+        y_display_at_zero = y_transform.transform((0, 0))[1] 
+        y_display_at_padding = y_transform.transform((0, title_pad))[1]
+        # Let's get the figure's dpi to make the conversion more accurate
+        fig_dpi = fig.dpi
+        # Convert pixels to points: pixels * (72 / dpi)
+        padding_in_pixels = abs(y_display_at_padding - y_display_at_zero)
+        title_label_pad_calculated = padding_in_pixels * (72 / fig_dpi)
+        ax.tick_params(axis='x', pad=xticks_label_pad_calculated)
+
         if title is not None:
-            plt.title(title, fontsize=title_fontsize, pad=title_pad)
+            plt.title(title, fontsize=title_fontsize, pad=title_label_pad_calculated)
         else:
             title_col = value_column if isinstance(value_column, str) else "Values"
-            plt.title(f'Box Plot of {title_col} by {meta_column}', fontsize=title_fontsize, pad=title_pad)
+            plt.title(f'Box Plot of {title_col} by {meta_column}', fontsize=title_fontsize, pad=title_label_pad_calculated)
 
     if show_xlabel:
         if xlabel is not None:
@@ -725,7 +791,7 @@ def create_boxplot(
         ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left',
                   fontsize=10, title_fontsize=12)
     
-    plt.tight_layout()
+    fig.tight_layout()
 
     # ~ Saving Plot ~ #
     if output:
@@ -734,11 +800,11 @@ def create_boxplot(
             os.makedirs(dir_name)
 
         filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf, format='pdf', dpi=600)
+        plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight')
         print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        plt.savefig(filename_png, format='png', dpi=600)
+        plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight')
         print(f"Box plot saved to {filename_png}")
 
     plt.show()
