@@ -85,6 +85,7 @@ def create_boxplot(
                    # ~ legend ~ # 
                    legend_title: str = None,
                    legend_y_pos: float = 0.5,
+                   legend_x_pos: float = 1.5,
                    #TO DO: add legend_pad
                    # ~ spine ~ #
                    hide_top_spine: bool = False,
@@ -211,6 +212,7 @@ def create_boxplot(
         # ~ legend ~ #
         legend_title (str, optional): Custom name for legend. Default is None.
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5.
+        legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5
         # ~ spine ~ #
         hide_top_spine (bool, optional): Hide the top spine. Default to False
         hide_right_spine (bool, optional): Hide the right spine. Default to False
@@ -791,7 +793,7 @@ def create_boxplot(
     elif isinstance(value_column, list): # If melted but no explicit hue, use the melted 'category' column
         legend_handles = [mpatches.Patch(color=color, label=label) for label, color in final_color_map.items()]
         main_legend_title = legend_title if legend_title is not None else 'Category'
-        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left',
+        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left',
                   fontsize=10, title_fontsize=12)
         ax.add_artist(plot_legend)
         t1 = ax.add_artist(plot_legend)

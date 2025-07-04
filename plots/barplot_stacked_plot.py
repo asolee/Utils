@@ -81,6 +81,7 @@ def create_stacked_barplot(
                            # ~ legend ~ #
                            legend_title: str = None,
                            legend_y_pos: float = 0.5,
+                           legend_x_pos: float = 1.5,
                            #TO DO: add legend_pad
                            # ~ bar ~ #
                            bar_width: float = 0.8,
@@ -237,6 +238,7 @@ def create_stacked_barplot(
         # ~ legend ~ #
         legend_title (str, optional): Custom name for legend. Default is None
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5
+        legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5
         # ~ bar ~ #
         bar_width (float, optional): width of the bars. Default to 0.8 
         # ~ spine ~ #
@@ -902,7 +904,7 @@ def create_stacked_barplot(
 
     # Create the first legend (for stacked bars)
     main_legend_title = legend_title if legend_title is not None else 'Category'
-    main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left', 
+    main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left', 
                                 fontsize=10, title_fontsize=12)
     ax.add_artist(main_legend)
     t1 = ax.add_artist(main_legend)
