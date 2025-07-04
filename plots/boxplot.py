@@ -820,6 +820,7 @@ def create_boxplot(
         print(f"Box plot saved to {filename_png}")
 
         filename_svg = output + ".svg"
+        plt.rcParams["svg.fonttype"] = "none"
         if boxes_legend_pos == "bottom":
             plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
         else:
