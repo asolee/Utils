@@ -702,7 +702,6 @@ def create_boxplot(
                                         title_fontsize=boxes_legend_fontsize)
         
             # Manually add the first legend back to the figure, as the second one might overwrite it
-            ax.add_artist(top_box_legend)
             t2 = ax.add_artist(top_box_legend)
 
     # Set y-axis limits
