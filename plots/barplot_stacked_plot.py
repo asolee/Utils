@@ -81,6 +81,7 @@ def create_stacked_barplot(
                            # ~ legend ~ #
                            legend_title: str = None,
                            legend_y_pos: float = 0.5,
+                           #TO DO: add legend_pad
                            # ~ bar ~ #
                            bar_width: float = 0.8,
                            # ~ spine ~ #
@@ -929,6 +930,13 @@ def create_stacked_barplot(
         else:
             plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
         print(f"Box plot saved to {filename_png}")
+
+        filename_svg = output + ".svg"
+        if boxes_legend_pos == "bottom":
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+        else:
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+        print(f"Box plot saved to {filename_svg}")
 
     plt.show()
 

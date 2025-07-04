@@ -85,6 +85,7 @@ def create_boxplot(
                    # ~ legend ~ # 
                    legend_title: str = None,
                    legend_y_pos: float = 0.5,
+                   #TO DO: add legend_pad
                    # ~ spine ~ #
                    hide_top_spine: bool = False,
                    hide_right_spine: bool = False,
@@ -753,8 +754,8 @@ def create_boxplot(
     plt.yticks(fontsize=yticks_label_fontsize)
     plt.xticks(fontsize=xticks_label_fontsize)
 
-    ax.set_axisbelow(False)
-    plt.grid(b=True,axis='y', linestyle='-', alpha=0.7)
+    ax.set_axisbelow(True)
+    plt.grid(axis='y', linestyle='-', alpha=0.7)
 
     #Hide top spine
     if hide_top_spine:
@@ -817,5 +818,12 @@ def create_boxplot(
         else:
             plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
         print(f"Box plot saved to {filename_png}")
+
+        filename_svg = output + ".svg"
+        if boxes_legend_pos == "bottom":
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+        else:
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+        print(f"Box plot saved to {filename_svg}")
 
     plt.show()
