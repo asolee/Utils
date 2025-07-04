@@ -905,9 +905,14 @@ def create_stacked_barplot(
     # Create the first legend (for stacked bars)
     main_legend_title = legend_title if legend_title is not None else 'Category'
     main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left', 
-                                fontsize=10, title_fontsize=12)
+                                fontsize=6, title_fontsize=6)
     ax.add_artist(main_legend)
     t1 = ax.add_artist(main_legend)
+
+    # Customization for the taxonomic profile plot
+    ax = plt.gca()
+    ax.grid(axis='x', visible=False)
+    ax.set_yticks([0, 25, 50, 75, 100])
     
     #control layout
     plt.tight_layout()
@@ -939,7 +944,5 @@ def create_stacked_barplot(
         else:
             plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
         print(f"Box plot saved to {filename_svg}")
-
-    plt.show()
 
     return dataframe_before_scaling, dataframe_after_scaling
