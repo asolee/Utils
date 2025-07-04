@@ -753,8 +753,8 @@ def create_boxplot(
     plt.yticks(fontsize=yticks_label_fontsize)
     plt.xticks(fontsize=xticks_label_fontsize)
 
-    ax.set_axisbelow(True)
-    plt.grid(axis='y', linestyle='-', alpha=0.7)
+    ax.set_axisbelow(False)
+    plt.grid(b=True,axis='y', linestyle='-', alpha=0.7)
 
     #Hide top spine
     if hide_top_spine:

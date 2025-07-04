@@ -854,6 +854,9 @@ def create_stacked_barplot(
         else:
             plt.title(f'Stacked Bar Plot of {title_suffix} by {meta_column}', fontsize=title_fontsize, pad=title_label_pad_calculated)
 
+    ax.set_axisbelow(True)
+    plt.grid(axis='y', linestyle='-', alpha=0.7)
+
     #Hide top spine
     if hide_top_spine:
         ax.spines['top'].set_visible(False)
@@ -865,6 +868,7 @@ def create_stacked_barplot(
     #Hide bottom spine
     if hide_bottom_spine:
         ax.spines['bottom'].set_visible(False)
+        ax.axhline(y=0.0, color='grey', linestyle='-', alpha=0.7, zorder=1.5)
 
     #Hide left spine
     if hide_left_spine:
@@ -895,9 +899,6 @@ def create_stacked_barplot(
 
     plt.yticks(fontsize=y_tick_label_fontsize)
     plt.xticks(fontsize=x_tick_label_fontsize)
-
-    ax.set_axisbelow(True)
-    plt.grid(axis='y', linestyle='-', alpha=0.7)
 
     # Create the first legend (for stacked bars)
     main_legend_title = legend_title if legend_title is not None else 'Category'
