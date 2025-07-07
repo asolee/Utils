@@ -69,7 +69,7 @@ def create_stacked_barplot(
                            x_tick_label_fontsize: float = 10,
                            y_tick_label_fontsize: float = 10,
                            x_tick_label_rotation: float = 90,
-                           x_tick_label_pad: float = 5,
+                           x_ticks_label_pad: float = 5,
                            # ~ axis tick ~ #
                            hide_bottom_tick: bool = False,
                            hide_left_tick: bool = False,
@@ -228,7 +228,7 @@ def create_stacked_barplot(
         x_tick_label_fontsize (float, optional): The font size for the x-axis tick labels. Defaults to 10.
         y_tick_label_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
         x_tick_label_rotation (float, optional): Rotation angle for the x label in degrees. Defaults to 90.
-        x_tick_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
+        x_ticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
         # ~ axis tick ~ #
         hide_bottom_tick (bool, optional): Hide bottom ticks. Defaults to False
         hide_left_tick (bool, optional): Hide left ticks. Defaults to False
@@ -658,7 +658,7 @@ def create_stacked_barplot(
     y_transform = ax.get_yaxis_transform()
     #tranform points to proper axis coordinates
     y_display_at_zero = y_transform.transform((0, 0))[1] 
-    y_display_at_padding = y_transform.transform((0, x_tick_label_pad))[1]
+    y_display_at_padding = y_transform.transform((0, x_ticks_label_pad))[1]
     # Let's get the figure's dpi to make the conversion more accurate
     fig_dpi = fig.dpi
     # Convert pixels to points: pixels * (72 / dpi)
