@@ -80,8 +80,10 @@ def create_stacked_barplot(
                            title_pad: float = 10,
                            # ~ legend ~ #
                            legend_title: str = None,
+                           legend_title_fontsize: float = 12,
                            legend_y_pos: float = 0.5,
                            legend_x_pos: float = 1.5,
+                           legend_fontsize: float = 10,
                            #TO DO: add legend_pad
                            # ~ bar ~ #
                            bar_width: float = 0.8,
@@ -237,8 +239,10 @@ def create_stacked_barplot(
         title_pad (float, optional): Distance between title and plot. Default to 10
         # ~ legend ~ #
         legend_title (str, optional): Custom name for legend. Default is None
+        legend_title_fontsize (float, optional): legend title fontsize. Default to 12.
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5
         legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5
+        legend_fontsize (float, optional): legend text fontsize. Default to 10.
         # ~ bar ~ #
         bar_width (float, optional): width of the bars. Default to 0.8 
         # ~ spine ~ #
@@ -623,6 +627,7 @@ def create_stacked_barplot(
             bottom_val += height
 
     ax.set_xticks(x_positions)
+    ax.set_xlim(x_positions[0] - (0.5 + (0.5 - (bar_width/2))), x_positions[-1] + (0.5 + (0.5 - (bar_width/2))))
 
     # ~ Automatic alignment based on x_tick_label_rotation and anchor rotation mode to better visualization ~ #
     ha_for_set_xticklabels = 'center' # Default
@@ -814,7 +819,7 @@ def create_stacked_barplot(
                                         title_fontsize=boxes_legend_fontsize)
         
             # Manually add the first legend back to the figure, as the second one might overwrite it
-            t2 = ax.add_artist(top_box_legend)
+            ax.add_artist(top_box_legend)
 
 
     # Set y-axis limits to ensure white space at the top
@@ -905,17 +910,16 @@ def create_stacked_barplot(
     # Create the first legend (for stacked bars)
     main_legend_title = legend_title if legend_title is not None else 'Category'
     main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left', 
-                                fontsize=6, title_fontsize=6)
+                            fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)                                
     ax.add_artist(main_legend)
-    t1 = ax.add_artist(main_legend)
+    ax.get_legend().remove()
 
     # Customization for the taxonomic profile plot
-    ax = plt.gca()
     ax.grid(axis='x', visible=False)
     ax.set_yticks([0, 25, 50, 75, 100])
-    
+
     #control layout
-    plt.tight_layout()
+    #plt.tight_layout()
 
     # ~ Saving Plot (if output path is provided) ~ #
     if output:
@@ -925,24 +929,24 @@ def create_stacked_barplot(
 
         filename_pdf = output + ".pdf"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[main_legend,top_box_legend])
         else:
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
         print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[main_legend,top_box_legend])
         else:
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
         print(f"Box plot saved to {filename_png}")
 
         filename_svg = output + ".svg"
         plt.rcParams["svg.fonttype"] = "none"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend,top_box_legend])
         else:
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
         print(f"Box plot saved to {filename_svg}")
 
     return dataframe_before_scaling, dataframe_after_scaling
