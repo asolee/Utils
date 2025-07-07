@@ -704,7 +704,7 @@ def create_boxplot(
                                         title_fontsize=boxes_legend_fontsize)
         
             # Manually add the first legend back to the figure, as the second one might overwrite it
-            t2 = ax.add_artist(top_box_legend)
+            ax.add_artist(top_box_legend)
 
     # Set y-axis limits
     min_y = df_plot[value_column].min()
@@ -786,17 +786,18 @@ def create_boxplot(
     if hue_column:
         legend_handles = [mpatches.Patch(color=color, label=label) for label, color in box_colors_for_legend.items()]
         main_legend_title = legend_title if legend_title is not None else hue_column
-        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(1.05, legend_y_pos), loc='center left',
+        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left',
                   fontsize=10, title_fontsize=12)
         ax.add_artist(plot_legend)
-        t1 = ax.add_artist(plot_legend)
+        ax.get_legend().remove()
+
     elif isinstance(value_column, list): # If melted but no explicit hue, use the melted 'category' column
         legend_handles = [mpatches.Patch(color=color, label=label) for label, color in final_color_map.items()]
         main_legend_title = legend_title if legend_title is not None else 'Category'
         plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left',
                   fontsize=10, title_fontsize=12)
         ax.add_artist(plot_legend)
-        t1 = ax.add_artist(plot_legend)
+        ax.get_legend().remove()
     
     #fig.tight_layout()
 
@@ -808,24 +809,24 @@ def create_boxplot(
 
         filename_pdf = output + ".pdf"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[plot_legend,top_box_legend])
         else:
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[plot_legend])
         print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[plot_legend,top_box_legend])
         else:
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[plot_legend])
         print(f"Box plot saved to {filename_png}")
 
         filename_svg = output + ".svg"
         plt.rcParams["svg.fonttype"] = "none"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[plot_legend,top_box_legend])
         else:
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[plot_legend])
         print(f"Box plot saved to {filename_svg}")
 
     plt.show()

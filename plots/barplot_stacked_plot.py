@@ -623,6 +623,7 @@ def create_stacked_barplot(
             bottom_val += height
 
     ax.set_xticks(x_positions)
+    ax.set_xlim(x_positions[0] - (0.5 + (0.5 - (bar_width/2))), x_positions[-1] + (0.5 + (0.5 - (bar_width/2))))
 
     # ~ Automatic alignment based on x_tick_label_rotation and anchor rotation mode to better visualization ~ #
     ha_for_set_xticklabels = 'center' # Default
@@ -814,7 +815,7 @@ def create_stacked_barplot(
                                         title_fontsize=boxes_legend_fontsize)
         
             # Manually add the first legend back to the figure, as the second one might overwrite it
-            t2 = ax.add_artist(top_box_legend)
+            ax.add_artist(top_box_legend)
 
 
     # Set y-axis limits to ensure white space at the top
@@ -907,10 +908,10 @@ def create_stacked_barplot(
     main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left', 
                                 fontsize=10, title_fontsize=12)
     ax.add_artist(main_legend)
-    t1 = ax.add_artist(main_legend)
+    ax.get_legend().remove()
     
     #control layout
-    plt.tight_layout()
+    #plt.tight_layout()
 
     # ~ Saving Plot (if output path is provided) ~ #
     if output:
@@ -920,24 +921,24 @@ def create_stacked_barplot(
 
         filename_pdf = output + ".pdf"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[main_legend,top_box_legend])
         else:
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
         print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[main_legend,top_box_legend])
         else:
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
         print(f"Box plot saved to {filename_png}")
 
         filename_svg = output + ".svg"
         plt.rcParams["svg.fonttype"] = "none"
         if boxes_legend_pos == "bottom":
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[t1,t2])
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend,top_box_legend])
         else:
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[t1])
+            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
         print(f"Box plot saved to {filename_svg}")
 
     plt.show()
