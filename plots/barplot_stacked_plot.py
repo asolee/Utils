@@ -69,7 +69,7 @@ def create_stacked_barplot(
                            x_tick_label_fontsize: float = 10,
                            y_tick_label_fontsize: float = 10,
                            x_tick_label_rotation: float = 90,
-                           x_ticks_label_pad: float = 5,
+                           x_tick_label_pad: float = 5,
                            # ~ axis tick ~ #
                            hide_bottom_tick: bool = False,
                            hide_left_tick: bool = False,
@@ -80,8 +80,10 @@ def create_stacked_barplot(
                            title_pad: float = 10,
                            # ~ legend ~ #
                            legend_title: str = None,
+                           legend_title_fontsize: float = 12,
                            legend_y_pos: float = 0.5,
                            legend_x_pos: float = 1.5,
+                           legend_fontsize: float = 10,
                            #TO DO: add legend_pad
                            # ~ bar ~ #
                            bar_width: float = 0.8,
@@ -226,7 +228,7 @@ def create_stacked_barplot(
         x_tick_label_fontsize (float, optional): The font size for the x-axis tick labels. Defaults to 10.
         y_tick_label_fontsize (float, optional): The font size for the y-axis tick labels. Defaults to 10.
         x_tick_label_rotation (float, optional): Rotation angle for the x label in degrees. Defaults to 90.
-        x_ticks_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
+        x_tick_label_pad (float, optional): Distance of x-tick labels from the plot. Defaults to 5.
         # ~ axis tick ~ #
         hide_bottom_tick (bool, optional): Hide bottom ticks. Defaults to False
         hide_left_tick (bool, optional): Hide left ticks. Defaults to False
@@ -237,8 +239,10 @@ def create_stacked_barplot(
         title_pad (float, optional): Distance between title and plot. Default to 10
         # ~ legend ~ #
         legend_title (str, optional): Custom name for legend. Default is None
+        legend_title_fontsize (float, optional): legend title fontsize. Default to 12.
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5
         legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5
+        legend_fontsize (float, optional): legend text fontsize. Default to 10.
         # ~ bar ~ #
         bar_width (float, optional): width of the bars. Default to 0.8 
         # ~ spine ~ #
@@ -654,7 +658,7 @@ def create_stacked_barplot(
     y_transform = ax.get_yaxis_transform()
     #tranform points to proper axis coordinates
     y_display_at_zero = y_transform.transform((0, 0))[1] 
-    y_display_at_padding = y_transform.transform((0, x_ticks_label_pad))[1]
+    y_display_at_padding = y_transform.transform((0, x_tick_label_pad))[1]
     # Let's get the figure's dpi to make the conversion more accurate
     fig_dpi = fig.dpi
     # Convert pixels to points: pixels * (72 / dpi)
@@ -906,7 +910,7 @@ def create_stacked_barplot(
     # Create the first legend (for stacked bars)
     main_legend_title = legend_title if legend_title is not None else 'Category'
     main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left', 
-                                fontsize=10, title_fontsize=12)
+                                fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)
     ax.add_artist(main_legend)
     ax.get_legend().remove()
     
