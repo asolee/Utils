@@ -535,7 +535,6 @@ def create_stacked_barplot(
         fig_width = 2*ax_width
         fig_height = 2*ax_height
         fig = plt.figure(figsize=(fig_width, fig_height))
-        print(fig_width, fig_height, ax_width, ax_height)
         ax = fig.add_axes([0.25, 0.25, ax_width / fig_width, ax_height / fig_height])
     else:
         fig, ax = plt.subplots(figsize=(fig_width, fig_height))
@@ -671,7 +670,7 @@ def create_stacked_barplot(
                        rotation_mode=rotation_mode_for_xticklabels)
     
     #set robust y pad
-    y_transform = ax.get_yaxis_transform()
+    y_transform = ax.get_xaxis_transform()
     #tranform points to proper axis coordinates
     y_display_at_zero = y_transform.transform((0, 0))[1] 
     y_display_at_padding = y_transform.transform((0, x_ticks_label_pad))[1]
