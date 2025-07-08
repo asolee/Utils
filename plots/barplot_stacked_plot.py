@@ -16,6 +16,8 @@ def create_stacked_barplot(
                            output: str = None,
                            fig_width: float = 10,
                            fig_height: float = 7,
+                           ax_width = None,
+                           aspect = None,
                            dpi: float = 600,
                            #### SCALING OPTIONS ####
                            scaling: str = 'none',
@@ -527,7 +529,16 @@ def create_stacked_barplot(
         final_meta_order = grouped_df_scaled.index.tolist()
 
     # ~ Plotting ~ #
-    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    if ax_width:
+        # Use axes of absolute size in a large aenough figure canvas
+        ax_height = ax_width / aspect
+        fig_width = 2*ax_width
+        fig_height = 2*ax_height
+        fig = plt.figure(figsize=(fig_width, fig_height))
+        print(fig_width, fig_height, ax_width, ax_height)
+        ax = fig.add_axes([0.25, 0.25, ax_width / fig_width, ax_height / fig_height])
+    else:
+        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
     # Calculate x-positions for bars and handle grouping
     x_positions = []
