@@ -704,7 +704,6 @@ def create_boxplot(
                     columnspacing=0.5 # Compact spacing between legend columns
                 )
             else:
-            
                 top_box_legend = ax.legend(handles=top_box_legend_handles,
                                         title=legend_title_str,
                                         bbox_to_anchor=(1.05, boxes_legend_y_pos),

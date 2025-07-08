@@ -244,7 +244,7 @@ def create_stacked_barplot(
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5
         legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5
         legend_fontsize (float, optional): legend text fontsize. Default to 10.
-        legend position (str, optional): position of the main legend, based on matplot and custom values.
+        legend_position (str, optional): position of the main legend, based on matplot and custom values.
                                             Matplot values, 'best','upper right','upper left','lower left','lower right','right','center left','center right','lower center','upper center','center'
                                             Custom values, "custom bottom"
                                             Defaults to 'center left'.
@@ -819,7 +819,7 @@ def create_stacked_barplot(
                 top_box_legend = ax.legend(handles=top_box_legend_handles,
                                         title=legend_title_str,
                                         bbox_to_anchor=(1.05, boxes_legend_y_pos),
-                                        loc=legend_position,
+                                        loc="center left",
                                         fontsize=boxes_legend_fontsize,
                                         title_fontsize=boxes_legend_fontsize)
         
