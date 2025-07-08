@@ -84,8 +84,11 @@ def create_boxplot(
                    title_fontsize: float = 14,
                    # ~ legend ~ # 
                    legend_title: str = None,
+                   legend_title_fontsize: float = 12,
                    legend_y_pos: float = 0.5,
                    legend_x_pos: float = 1.5,
+                   legend_fontsize: float = 10,
+                   legend_position: str = "center left",
                    #TO DO: add legend_pad
                    # ~ spine ~ #
                    hide_top_spine: bool = False,
@@ -211,9 +214,15 @@ def create_boxplot(
         title_fontsize (float, optional): The font size for the plot title. Defaults to 14.
         # ~ legend ~ #
         legend_title (str, optional): Custom name for legend. Default is None.
+        legend_title_fontsize (float, optional): legend title fontsize. Default to 12.
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5.
-        legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5
-        # ~ spine ~ #
+        legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5.
+        legend_fontsize (float, optional): legend text fontsize. Default to 10.
+        legend_position (str, optional): position of the main legend, based on matplot and custom values.
+                                            Matplot values, 'best','upper right','upper left','lower left','lower right','right','center left','center right','lower center','upper center','center'
+                                            Custom values, "custom bottom"
+                                            Defaults to 'center left'.
+        # ~ spine ~ #s
         hide_top_spine (bool, optional): Hide the top spine. Default to False
         hide_right_spine (bool, optional): Hide the right spine. Default to False
         hide_bottom_spine (bool, optional): Hide the bottom spine. Default to False
@@ -784,20 +793,44 @@ def create_boxplot(
 
     # Create legend
     if hue_column:
-        legend_handles = [mpatches.Patch(color=color, label=label) for label, color in box_colors_for_legend.items()]
         main_legend_title = legend_title if legend_title is not None else hue_column
-        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left',
-                  fontsize=10, title_fontsize=12)
-        ax.add_artist(plot_legend)
-        ax.get_legend().remove()
-
-    elif isinstance(value_column, list): # If melted but no explicit hue, use the melted 'category' column
-        legend_handles = [mpatches.Patch(color=color, label=label) for label, color in final_color_map.items()]
+        current_color_map = box_colors_for_legend
+    else:
         main_legend_title = legend_title if legend_title is not None else 'Category'
-        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left',
-                  fontsize=10, title_fontsize=12)
-        ax.add_artist(plot_legend)
-        ax.get_legend().remove()
+        current_color_map = final_color_map
+
+    if legend_position != "custom bottom":
+        legend_handles = [mpatches.Patch(color=color, label=label) for label, color in current_color_map.items()]
+        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc=legend_position,
+                                fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)
+    else:
+        ordered_unique_main_legend_values = list(color_map.keys())
+        all_legend_handles = [mlines.Line2D([], [], color='none', marker='None', linestyle='None')]
+
+        replacements = str.maketrans({"_": r"\_", " ": r"\ "})
+        all_legend_labels = [r"$\mathbf{" + main_legend_title.translate(replacements) + r"}$"]
+
+        for val in ordered_unique_main_legend_values:
+            color = color_map.get(val, 'grey')
+            all_legend_handles.append(mpatches.Patch(color=color))
+            all_legend_labels.append(str(val))
+
+        plot_legend = ax.legend(
+            handles=all_legend_handles,
+            labels=all_legend_labels,
+            bbox_to_anchor=(0.5, legend_y_pos),
+            loc='lower center',
+            ncol=len(all_legend_labels),
+            fontsize=legend_fontsize,
+            title_fontsize=0,
+            frameon=False,
+            handlelength=0.7,
+            handletextpad=0.5,
+            columnspacing=0.5
+        )
+        
+    ax.add_artist(plot_legend)
+    ax.get_legend().remove()
     
     #fig.tight_layout()
 

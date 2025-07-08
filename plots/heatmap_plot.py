@@ -7,27 +7,33 @@ import matplotlib.cm as cm # For default colormaps
 import matplotlib.colors as mcolors # For more detailed color mapping
 import numpy as np # Import numpy for checking all zeros
 
-def create_combined_heatmap_from_dataframe(df: pd.DataFrame,
-                                           value_columns: str or list,
-                                           metadata_columns: str or list,
-                                           rescale_values: bool =False,
-                                           min_relative_abundance: float =0.0,
-                                           min_sample_percentage: float =0.0,
-                                           row_cluster: bool =True,
-                                           remove_all_zero: bool =False,
-                                           output: str ="output/",
-                                           metadata_colors_mapping: dict =None,
-                                           #layout
-                                           row_height: float = 6):
+def create_heatmap(#### BASIC INPUT PARAMETERS ####
+                   df: pd.DataFrame,
+                   value_columns: str or list,
+                   metadata_columns: str or list,
+                   output: str ="output/",
+                   fig_width: float = 10,
+                   rescale_values: bool =False,
+                   min_relative_abundance: float =0.0,
+                   min_sample_percentage: float =0.0,
+                   row_cluster: bool =True,
+                   remove_all_zero: bool =False,
+                   metadata_colors_mapping: dict =None,
+                   #### LAYOUT ####
+                   row_height: float = 6,
+                   show_legend: bool = True):
     """
     Generates a heatmap from a pandas DataFrame, displaying multiple
     value columns along with multiple metadata columns.
 
     Args:
+        #### BASIC INPUT PARAMETERS ####
         df (pd.DataFrame): The input pandas DataFrame.
         value_columns (list of str): A list of column names in `df` to use for the heatmap values.
         metadata_columns (list of str): A list of column names in `df` to use as
             metadata. These columns will form part of the x and y axes.
+        output (str, optional): The base path for saving the heatmap. Defaults to "output/".
+        fig_width (float, optional): figure wifth. Defaults to 10.
         rescale_values (bool, optional): If True, values in `value_columns` will be
             rescaled to a 0-1 range using Min-Max scaling before plotting.
             Defaults to False.
@@ -38,14 +44,14 @@ def create_combined_heatmap_from_dataframe(df: pd.DataFrame,
         row_cluster (bool, optional): If True, rows will be clustered. Defaults to True.
         remove_all_zero (bool, optional): If True, value columns that contain only zero
             values across all rows will be removed. Defaults to False.
-        output (str, optional): The base path for saving the heatmap. Defaults to "output/".
         metadata_colors_mapping (dict, optional): A dictionary where keys are metadata column names
             and values are dictionaries mapping specific metadata values to their colors.
             If a color is not provided for a value, it will be automatically assigned.
             Defaults to None.
 
-        # ~ Layout of heatmap ~ #
-        row_height (float, optional): The height of the rows (the scale can change based on other elements in the plot). Defaults to 6
+        #### LAYOUT ####
+        row_height (float, optional): The height of the rows (the scale can change based on other elements in the plot). Defaults to 6.
+        show_legend (bool, optional): Show heatmap legend, Defaults to True.
 
     Returns:
         A single PyComplexHeatmap heatmap. Returns None if the input DataFrame is
@@ -201,7 +207,7 @@ def create_combined_heatmap_from_dataframe(df: pd.DataFrame,
             col_ha = pch.HeatmapAnnotation(df=df_for_metadata_annotation[valid_metadata_columns],
                                            colors=final_colors_for_annotation,
                                            plot=False,
-                                           legend=True,
+                                           legend=show_legend,
                                            legend_gap=0.5,
                                            hgap=0,
                                            axis=1,
@@ -225,20 +231,20 @@ def create_combined_heatmap_from_dataframe(df: pd.DataFrame,
     plt.figure(figsize=(fig_width, dynamic_height)) 
 
     # ~ Initialize ClusterMapPlotter ~ #
-    plt.figure(figsize=(10, dynamic_height)) # Use dynamic height here
     cm = pch.ClusterMapPlotter(data=df_for_heatmap_data.transpose(),
                                top_annotation=col_ha,
                                col_cluster=True,
                                row_cluster=row_cluster,
                                col_split_gap=0.5,
                                row_split_gap=0.8,
-                               label='',
+                               label='Cell type\nfraction',
                                row_dendrogram=True,
                                col_dendrogram=True,
                                show_rownames=True,
                                show_colnames=False,
                                tree_kws={'row_cmap': 'Set1'},
                                verbose=1,
+                               legend=show_legend,
                                legend_gap=3,
                                legend_vpad=-30,
                                legend_hpad=4,
@@ -253,12 +259,18 @@ def create_combined_heatmap_from_dataframe(df: pd.DataFrame,
     # Save the plot (PDF)
     filename_pdf = output + ".pdf"
     plt.savefig(filename_pdf, format='pdf', bbox_inches='tight', dpi=600)
+    print(f"Heatmap saved to {filename_pdf}")
 
     # Save the plot (PNG)
     filename_png = output + ".png"
     plt.savefig(filename_png, format='png', bbox_inches='tight', dpi=600)
-    
-    plt.show()
+    print(f"Heatmap saved to {filename_png}")
 
-    print(f"Heatmap saved to {filename_pdf} and {filename_png}")
+    # Save the plot (SVG)
+    filename_svg = output + ".svg"
+    plt.rcParams["svg.fonttype"] = "none"
+    plt.savefig(filename_svg, format='svg', bbox_inches='tight', dpi=600)
+    print(f"Heatmap saved to {filename_svg}")
+
+    plt.show()
 
