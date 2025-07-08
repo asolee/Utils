@@ -919,7 +919,7 @@ def create_stacked_barplot(
         main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc="center left", 
                                 fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)
     else:
-        ordered_unique_main_legend_values = list(color_map.keys())
+        ordered_unique_main_legend_values = list(category_colors_internal_map.keys())
         all_legend_handles = []
         all_legend_labels = []
 
@@ -929,7 +929,7 @@ def create_stacked_barplot(
 
         # Add the colored square patches and their labels for the actual categories
         for val in ordered_unique_main_legend_values:
-            color = color_map.get(val, 'grey')
+            color = category_colors_internal_map.get(val, 'grey')
             all_legend_handles.append(mpatches.Patch(color=color)) # Patch for the square color
             all_legend_labels.append(str(val)) # Label for the square
 
