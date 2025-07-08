@@ -48,6 +48,7 @@ def create_stacked_barplot(
                            boxes_legend_title: str = None, 
                            boxes_legend_fontsize: float = 15,
                            boxes_legend_y_pos: float = 1,
+                           boxes_legend_x_pos: float = 0.5,
                            #### METADATA GROUPING ####
                            group_by_column: str = None,
                            group_spacing: float = 0,
@@ -195,6 +196,7 @@ def create_stacked_barplot(
         boxes_legend_title (str, ptional): Boxes legend Title. Default to {boxes_column} 
         boxes_legend_fontsize (float, optional): font size of boxes legend element text. Defaults to 15
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
+        boxes_legend_x_pos (float, optional): Position of top_box legend on X-axis
 
         #### METADATA GROUPING ####
 
@@ -821,7 +823,7 @@ def create_stacked_barplot(
                 top_box_legend = ax.legend(
                     handles=all_legend_handles,
                     labels=all_legend_labels,
-                    bbox_to_anchor=(0.5, boxes_legend_y_pos),
+                    bbox_to_anchor=(boxes_legend_x_pos, boxes_legend_y_pos),
                     loc='lower center', # Position at the bottom center
                     ncol=len(all_legend_labels), # Ensure all elements are on a single row
                     fontsize=boxes_legend_fontsize,
@@ -835,7 +837,7 @@ def create_stacked_barplot(
             
                 top_box_legend = ax.legend(handles=top_box_legend_handles,
                                         title=legend_title_str,
-                                        bbox_to_anchor=(1.05, boxes_legend_y_pos),
+                                        bbox_to_anchor=(boxes_legend_x_pos, boxes_legend_y_pos),
                                         loc="center left",
                                         fontsize=boxes_legend_fontsize,
                                         title_fontsize=boxes_legend_fontsize)
@@ -986,17 +988,17 @@ def create_stacked_barplot(
     else:
         artist_elements = [main_legend]
 
-        filename_pdf = output + ".pdf"
-        plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=artist_elements)
-        print(f"Box plot saved to {filename_pdf}")
+    filename_pdf = output + ".pdf"
+    plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=artist_elements)
+    print(f"Box plot saved to {filename_pdf}")
 
-        filename_png = output + ".png"
-        plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
-        print(f"Box plot saved to {filename_png}")
+    filename_png = output + ".png"
+    plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
+    print(f"Box plot saved to {filename_png}")
 
-        filename_svg = output + ".svg"
-        plt.rcParams["svg.fonttype"] = "none"
-        plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
-        print(f"Box plot saved to {filename_svg}")
+    filename_svg = output + ".svg"
+    plt.rcParams["svg.fonttype"] = "none"
+    plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
+    print(f"Box plot saved to {filename_svg}")
 
     return dataframe_before_scaling, dataframe_after_scaling, ax, artist_elements
