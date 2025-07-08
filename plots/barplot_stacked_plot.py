@@ -16,6 +16,8 @@ def create_stacked_barplot(
                            output: str = None,
                            fig_width: float = 10,
                            fig_height: float = 7,
+                           ax_width: float = None,
+                           aspect: float = None,
                            dpi: float = 600,
                            #### SCALING OPTIONS ####
                            scaling: str = 'none',
@@ -73,6 +75,7 @@ def create_stacked_barplot(
                            # ~ axis tick ~ #
                            hide_bottom_tick: bool = False,
                            hide_left_tick: bool = False,
+                           yticks: list = None,
                            # ~ title ~ #
                            show_title: bool = True,
                            title: str = None,
@@ -117,6 +120,8 @@ def create_stacked_barplot(
                                  If provided, the plot will be saved as a PDF and PNG.
         fig_width (float, optional): The width of the figure in inches. Defaults to 10.
         fig_height (float, optional): The height of the figure in inches. Defaults to 7.
+        ax_width (float, optional): Define absolute size of axes width. Defaults to None
+        aspect (float, optional): If {ax_width} is specified, define the ratio between {ax_width} to axes height. Defaults to None
         dpi (float, optional): Dots per inch. Defaults to 600
 
         #### SCALING OPTIONS ####
@@ -233,6 +238,7 @@ def create_stacked_barplot(
         # ~ axis tick ~ #
         hide_bottom_tick (bool, optional): Hide bottom ticks. Defaults to False
         hide_left_tick (bool, optional): Hide left ticks. Defaults to False
+        yticks (list, optional): list of Y-axis ticks. Defaults to None.
         # ~ title ~ #
         show_title (bool, optional): If True, the plot title will be displayed. Defaults to True.
         title (str, optional): Custom title, if provided, overrides default. Defaults to None.
@@ -297,7 +303,10 @@ def create_stacked_barplot(
         raise TypeError("\{color_map\} must be a dictionary if provided.")
     if color_map is None: # Ensure it's a dict to avoid errors later
         color_map = {}
-
+    
+    # validate ax_width and aspect
+    if (ax_width is None and aspect is not None) or (ax_width is not None and aspect is None):
+        raise ValueError("Both 'ax_width' and 'aspect' must be specified together")
 
     # Validate group_by_column if provided
     if group_by_column:
@@ -527,7 +536,15 @@ def create_stacked_barplot(
         final_meta_order = grouped_df_scaled.index.tolist()
 
     # ~ Plotting ~ #
-    fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+    if ax_width:
+        # Use axes of absolute size in a large aenough figure canvas
+        ax_height = ax_width / aspect
+        fig_width = 2*ax_width
+        fig_height = 2*ax_height
+        fig = plt.figure(figsize=(fig_width, fig_height))
+        ax = fig.add_axes([0.25, 0.25, ax_width / fig_width, ax_height / fig_height])
+    else:
+        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
     # Calculate x-positions for bars and handle grouping
     x_positions = []
@@ -949,7 +966,12 @@ def create_stacked_barplot(
             
     ax.add_artist(main_legend)
     ax.get_legend().remove()
-    
+
+    # Customization for the taxonomic profile plot
+    ax.grid(axis='x', visible=False)
+    if yticks:
+        ax.set_yticks(yticks)
+
     #control layout
     #plt.tight_layout()
 
@@ -959,28 +981,22 @@ def create_stacked_barplot(
         if dir_name and not os.path.exists(dir_name):
             os.makedirs(dir_name)
 
+    if boxes_legend_pos == "bottom":
+        artist_elements = [main_legend,top_box_legend]
+    else:
+        artist_elements = [main_legend]
+
         filename_pdf = output + ".pdf"
-        if boxes_legend_pos == "bottom":
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[main_legend,top_box_legend])
-        else:
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
+        plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=artist_elements)
         print(f"Box plot saved to {filename_pdf}")
 
         filename_png = output + ".png"
-        if boxes_legend_pos == "bottom":
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[main_legend,top_box_legend])
-        else:
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
+        plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
         print(f"Box plot saved to {filename_png}")
 
         filename_svg = output + ".svg"
         plt.rcParams["svg.fonttype"] = "none"
-        if boxes_legend_pos == "bottom":
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend,top_box_legend])
-        else:
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[main_legend])
+        plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
         print(f"Box plot saved to {filename_svg}")
 
-    plt.show()
-
-    return dataframe_before_scaling, dataframe_after_scaling
+    return dataframe_before_scaling, dataframe_after_scaling, ax, artist_elements
