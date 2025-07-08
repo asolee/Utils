@@ -660,7 +660,7 @@ def create_stacked_barplot(
                        rotation_mode=rotation_mode_for_xticklabels)
     
     #set robust y pad
-    y_transform = ax.get_yaxis_transform()
+    y_transform = ax.get_xaxis_transform()
     #tranform points to proper axis coordinates
     y_display_at_zero = y_transform.transform((0, 0))[1] 
     y_display_at_padding = y_transform.transform((0, x_ticks_label_pad))[1]

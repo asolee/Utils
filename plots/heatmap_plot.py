@@ -19,9 +19,14 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
                    row_cluster: bool =True,
                    remove_all_zero: bool =False,
                    metadata_colors_mapping: dict =None,
-                   #### LAYOUT ####
+                   #### HEATMAP LAYOUT ####
                    row_height: float = 6,
-                   show_legend: bool = True):
+                   show_legend: bool = True,
+                   fig_height_inc: bool = None,
+                   fig_width_inc: bool = None,
+                   heatmap_label_fontsize: float = 10,
+                   #### ANNOTATION LAYOUT  ####
+                   annotation_fontsize:float = 10):
     """
     Generates a heatmap from a pandas DataFrame, displaying multiple
     value columns along with multiple metadata columns.
@@ -49,9 +54,15 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
             If a color is not provided for a value, it will be automatically assigned.
             Defaults to None.
 
-        #### LAYOUT ####
+        #### HEATMAP LAYOUT ####
         row_height (float, optional): The height of the rows (the scale can change based on other elements in the plot). Defaults to 6.
         show_legend (bool, optional): Show heatmap legend, Defaults to True.
+        fig_height_inc (float, optional) overwrite the height of the heatmap in inches. Defaults to None
+        fig_width_inc (float, optional) overwrite the width of the heatmap in inches. Defaults to None
+        heatmap_label_fontsize (float, optional) size of the heatmap names. Defaults to 10.
+
+        #### ANNOTATION LAYOUT  ####
+        annotation_fontsize (float, optional) size of the annotation names. Defaults to 10.
 
     Returns:
         A single PyComplexHeatmap heatmap. Returns None if the input DataFrame is
@@ -208,6 +219,7 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
                                            colors=final_colors_for_annotation,
                                            plot=False,
                                            legend=show_legend,
+                                           label_kws={'fontsize':annotation_fontsize},
                                            legend_gap=0.5,
                                            hgap=0,
                                            axis=1,
@@ -226,9 +238,7 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
     height_per_row = 0.1 # Height contribution per row (value column)
     dynamic_height = max(base_height, len(value_columns) * height_per_row)
 
-    fig_width = 7
-
-    plt.figure(figsize=(fig_width, dynamic_height)) 
+    plt.figure(figsize=(fig_width, dynamic_height))
 
     # ~ Initialize ClusterMapPlotter ~ #
     cm = pch.ClusterMapPlotter(data=df_for_heatmap_data.transpose(),
@@ -244,12 +254,26 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
                                show_colnames=False,
                                tree_kws={'row_cmap': 'Set1'},
                                verbose=1,
-                               legend=show_legend,
+                               plot_legend=show_legend,
                                legend_gap=3,
                                legend_vpad=-30,
                                legend_hpad=4,
+                               yticklabels_kws={'labelsize': heatmap_label_fontsize},
                                legend_kws={'color_text':False},
                                cmap='viridis')
+    
+    current_fig = plt.gcf()
+    current_fig_width, current_figure_height = current_fig.figure.get_size_inches()
+
+    new_width = current_fig_width
+    new_height = current_figure_height
+
+    if fig_height_inc:
+        new_height = fig_height_inc
+    if fig_width_inc:
+        new_width = fig_width_inc
+
+    current_fig.set_size_inches(new_width, new_height)
     
     # Create the directory if it doesn't exist
     dir_name = os.path.dirname(output)
