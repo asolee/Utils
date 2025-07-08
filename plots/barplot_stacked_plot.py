@@ -84,6 +84,7 @@ def create_stacked_barplot(
                            legend_y_pos: float = 0.5,
                            legend_x_pos: float = 1.5,
                            legend_fontsize: float = 10,
+                           legend_position: str = "center left",
                            #TO DO: add legend_pad
                            # ~ bar ~ #
                            bar_width: float = 0.8,
@@ -243,6 +244,10 @@ def create_stacked_barplot(
         legend_y_pos (float, optional): Position of legend in Y-axis. Default 0.5
         legend_x_pos (float, optional): Position of legend in X-axis. Default 1.5
         legend_fontsize (float, optional): legend text fontsize. Default to 10.
+        legend position (str, optional): position of the main legend, based on matplot and custom values.
+                                            Matplot values, 'best','upper right','upper left','lower left','lower right','right','center left','center right','lower center','upper center','center'
+                                            Custom values, "custom bottom"
+                                            Defaults to 'center left'.
         # ~ bar ~ #
         bar_width (float, optional): width of the bars. Default to 0.8 
         # ~ spine ~ #
@@ -814,7 +819,7 @@ def create_stacked_barplot(
                 top_box_legend = ax.legend(handles=top_box_legend_handles,
                                         title=legend_title_str,
                                         bbox_to_anchor=(1.05, boxes_legend_y_pos),
-                                        loc='center left',
+                                        loc=legend_position,
                                         fontsize=boxes_legend_fontsize,
                                         title_fontsize=boxes_legend_fontsize)
         
@@ -909,8 +914,39 @@ def create_stacked_barplot(
 
     # Create the first legend (for stacked bars)
     main_legend_title = legend_title if legend_title is not None else 'Category'
-    main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc='center left', 
+
+    if legend_position != "custom bottom":
+        main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc=legend_position, 
                                 fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)
+    else:
+        ordered_unique_main_legend_values = list(color_map.keys())
+        all_legend_handles = []
+        all_legend_labels = []
+
+        all_legend_handles.append(mlines.Line2D([], [], color='none', marker='None', linestyle='None'))
+        replacements = str.maketrans({"_": "\_", " ": "\ "})
+        all_legend_labels.append(r"$\mathbf{" + main_legend_title.translate(replacements) + r"}$")
+
+        # Add the colored square patches and their labels for the actual categories
+        for val in ordered_unique_main_legend_values:
+            color = color_map.get(val, 'grey')
+            all_legend_handles.append(mpatches.Patch(color=color)) # Patch for the square color
+            all_legend_labels.append(str(val)) # Label for the square
+
+            main_legend = ax.legend(
+                handles=all_legend_handles,
+                labels=all_legend_labels,
+                bbox_to_anchor=(0.5, legend_y_pos),
+                loc='lower center', # Position at the bottom center
+                ncol=len(all_legend_labels), # Ensure all elements are on a single row
+                fontsize=legend_fontsize,
+                title_fontsize=0,
+                frameon=False, # No frame around the legend
+                handlelength=0.7, # Default handle length for patches
+                handletextpad=0.5, # Space between handle (square) and its text
+                columnspacing=0.5 # Compact spacing between legend columns
+                )
+            
     ax.add_artist(main_legend)
     ax.get_legend().remove()
     
