@@ -75,6 +75,7 @@ def create_stacked_barplot(
                            # ~ axis tick ~ #
                            hide_bottom_tick: bool = False,
                            hide_left_tick: bool = False,
+                           yticks = None,
                            # ~ title ~ #
                            show_title: bool = True,
                            title: str = None,
@@ -962,7 +963,8 @@ def create_stacked_barplot(
 
     # Customization for the taxonomic profile plot
     ax.grid(axis='x', visible=False)
-    ax.set_yticks([0, 25, 50, 75, 100])
+    if yticks:
+        ax.set_yticks(yticks)
 
     #control layout
     #plt.tight_layout()
