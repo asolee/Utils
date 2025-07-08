@@ -803,14 +803,14 @@ def create_boxplot(
         plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc="center left",
                                 fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)
     else:
-        ordered_unique_main_legend_values = list(color_map.keys())
+        ordered_unique_main_legend_values = list(final_color_map.keys())
         all_legend_handles = [mlines.Line2D([], [], color='none', marker='None', linestyle='None')]
 
         replacements = str.maketrans({"_": r"\_", " ": r"\ "})
         all_legend_labels = [r"$\mathbf{" + main_legend_title.translate(replacements) + r"}$"]
 
         for val in ordered_unique_main_legend_values:
-            color = color_map.get(val, 'grey')
+            color = final_color_map.get(val, 'grey')
             all_legend_handles.append(mpatches.Patch(color=color))
             all_legend_labels.append(str(val))
 
