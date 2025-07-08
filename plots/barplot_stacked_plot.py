@@ -916,7 +916,7 @@ def create_stacked_barplot(
     main_legend_title = legend_title if legend_title is not None else 'Category'
 
     if legend_position != "custom bottom":
-        main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc=legend_position, 
+        main_legend = ax.legend(title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc="center left", 
                                 fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)
     else:
         ordered_unique_main_legend_values = list(color_map.keys())

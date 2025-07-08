@@ -800,7 +800,7 @@ def create_boxplot(
 
     if legend_position != "custom bottom":
         legend_handles = [mpatches.Patch(color=color, label=label) for label, color in current_color_map.items()]
-        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc=legend_position,
+        plot_legend = ax.legend(handles=legend_handles, title=main_legend_title, bbox_to_anchor=(legend_x_pos, legend_y_pos), loc="center left",
                                 fontsize=legend_fontsize, title_fontsize=legend_title_fontsize)
     else:
         ordered_unique_main_legend_values = list(color_map.keys())
