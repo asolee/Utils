@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import PyComplexHeatmap as pch
 from sklearn.preprocessing import MinMaxScaler
@@ -7,32 +8,40 @@ import matplotlib.cm as cm # For default colormaps
 import matplotlib.colors as mcolors # For more detailed color mapping
 import numpy as np # Import numpy for checking all zeros
 
-def create_heatmap(#### BASIC INPUT PARAMETERS ####
+def create_heatmap(# ~ BASIC INPUT PARAMETERS ~ #
                    df: pd.DataFrame,
                    value_columns: str or list,
                    metadata_columns: str or list,
-                   output: str ="output/",
+                   output: str = "output/",
                    fig_width: float = 10,
-                   rescale_values: bool =False,
-                   min_relative_abundance: float =0.0,
-                   min_sample_percentage: float =0.0,
-                   row_cluster: bool =True,
-                   remove_all_zero: bool =False,
-                   metadata_colors_mapping: dict =None,
-                   #### HEATMAP LAYOUT ####
+                   rescale_values: bool = False,
+                   min_relative_abundance: float = 0.0,
+                   min_sample_percentage: float = 0.0,
+                   row_cluster: bool = True,
+                   remove_all_zero: bool = False,
+                   metadata_colors_mapping: dict = None,
+                   # ~ HEATMAP LAYOUT ~ #
                    row_height: float = 6,
                    show_legend: bool = True,
                    fig_height_inc: bool = None,
                    fig_width_inc: bool = None,
                    heatmap_label_fontsize: float = 10,
-                   #### ANNOTATION LAYOUT  ####
-                   annotation_fontsize:float = 10):
+                   heatmap_value_name: str = "Value",
+                   # ~ ANNOTATION LAYOUT  ~ #
+                   annotation_fontsize:float = 10,
+                   # ~ LEGEND ~ #
+                   legend_vpad: float = -30,
+                   legend_hpad: float = 0,
+                   legend_gap: float = 3,
+                   legend_border: bool = False,
+                   legend_order: list = None,
+                   legend_rename: dict = None):
     """
     Generates a heatmap from a pandas DataFrame, displaying multiple
     value columns along with multiple metadata columns.
 
     Args:
-        #### BASIC INPUT PARAMETERS ####
+        # ~ BASIC INPUT PARAMETERS ~ #
         df (pd.DataFrame): The input pandas DataFrame.
         value_columns (list of str): A list of column names in `df` to use for the heatmap values.
         metadata_columns (list of str): A list of column names in `df` to use as
@@ -54,15 +63,24 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
             If a color is not provided for a value, it will be automatically assigned.
             Defaults to None.
 
-        #### HEATMAP LAYOUT ####
+        # ~ HEATMAP LAYOUT ~ #
         row_height (float, optional): The height of the rows (the scale can change based on other elements in the plot). Defaults to 6.
         show_legend (bool, optional): Show heatmap legend, Defaults to True.
         fig_height_inc (float, optional) overwrite the height of the heatmap in inches. Defaults to None
         fig_width_inc (float, optional) overwrite the width of the heatmap in inches. Defaults to None
         heatmap_label_fontsize (float, optional) size of the heatmap names. Defaults to 10.
+        heatmap_value_name (str, optional) Name of heatmap value. Default to "Value"
 
-        #### ANNOTATION LAYOUT  ####
+        # ~ ANNOTATION LAYOUT  ~ #
         annotation_fontsize (float, optional) size of the annotation names. Defaults to 10.
+
+        # ~ LEGEND ~ #
+        legend_vpad (float, optional) the vertical pad of the legend items. Defaults to -30
+        legend_hpad (float, optional) the horizontal pad of the legend items. Defaults to 0
+        legend_gap (float, optional) gap between legend. Defaults to 3
+        legend_border (bool, optional) Add border to legend box. Defaults to False
+        legend_order (list, optional) Specify the order of legend. Defaults to None
+        legend_rename (dict, optional) Dictionary to rename columns name for legend visualization. Defaults to None
 
     Returns:
         A single PyComplexHeatmap heatmap. Returns None if the input DataFrame is
@@ -163,10 +181,10 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
     cmap_idx = 0
 
     for col_idx, col in enumerate(metadata_columns):
-        # 1. Fill actual NaN values first with "Missing Information"
+        # Fill actual NaN values with "Missing Information"
         df_for_metadata_annotation[col] = df_for_metadata_annotation[col].fillna("Missing Information")
 
-        # 2. Then ensure the entire column is of string type.
+        # Ensure the entire column is of string type.
         df_for_metadata_annotation[col] = df_for_metadata_annotation[col].astype(str)
         
         unique_values = df_for_metadata_annotation[col].unique()
@@ -175,7 +193,7 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
         
         # Always assign gray to "Missing Information"
         if "Missing Information" in unique_values:
-            col_color_dict["Missing Information"] = "#BEBEBE" # Gray color for missing data
+            col_color_dict["Missing Information"] = "#BEBEBE"
 
         # Values to assign colors to (excluding "Missing Information")
         values_to_color = sorted([val for val in unique_values if val != "Missing Information"])
@@ -215,11 +233,37 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
                 col: colors_for_annotation.get(col, {}) for col in valid_metadata_columns
             }
 
-            col_ha = pch.HeatmapAnnotation(df=df_for_metadata_annotation[valid_metadata_columns],
-                                           colors=final_colors_for_annotation,
+            print(final_colors_for_annotation)
+
+            # ~ Create anno_simple for each column ~ #
+            anno_simple_args = {}
+            for col_name in df_for_metadata_annotation.columns:
+                if col_name in final_colors_for_annotation:
+                    # Initialize legend_kws
+                    legend_kws = dict(
+                        frameon=legend_border,
+                        labelcolor='black',
+                        color_text=False,
+                        labelspacing=0.5
+                    )
+                    
+                    # Add legend title if legend_rename is provided
+                    if legend_rename is not None and col_name in legend_rename:
+                        legend_kws["title"] = legend_rename[col_name]
+
+                    anno_simple_args[col_name] = pch.anno_simple(
+                        df_for_metadata_annotation[col_name],
+                        colors=final_colors_for_annotation[col_name],
+                        legend_kws=legend_kws
+                    )
+
+                else:
+                    print(f"Warning: No colors defined for column '{col_name}'. Skipping annotation for this column.")
+
+            col_ha = pch.HeatmapAnnotation(**anno_simple_args,
                                            plot=False,
-                                           legend=show_legend,
                                            label_kws={'fontsize':annotation_fontsize},
+                                           ticklabels_kws={'fontsize':annotation_fontsize},
                                            legend_gap=0.5,
                                            hgap=0,
                                            axis=1,
@@ -245,9 +289,10 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
                                top_annotation=col_ha,
                                col_cluster=True,
                                row_cluster=row_cluster,
+                               yticklabels=True,
                                col_split_gap=0.5,
                                row_split_gap=0.8,
-                               label='Cell type\nfraction',
+                               label=heatmap_value_name,
                                row_dendrogram=True,
                                col_dendrogram=True,
                                show_rownames=True,
@@ -255,13 +300,29 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
                                tree_kws={'row_cmap': 'Set1'},
                                verbose=1,
                                plot_legend=show_legend,
-                               legend_gap=3,
-                               legend_vpad=-30,
-                               legend_hpad=4,
+                               legend_gap=legend_gap,
+                               legend_vpad=legend_vpad,
+                               legend_hpad=legend_hpad,
                                yticklabels_kws={'labelsize': heatmap_label_fontsize},
-                               legend_kws={'color_text':False},
-                               cmap='viridis')
+                               cmap='viridis',
+                               legend_order= metadata_columns+[heatmap_value_name] if legend_order is None else legend_order+[heatmap_value_name]
+)
     
+    if show_legend:
+        for i in range(len(cm.cbars)):
+            print(i)
+            print(type(cm.cbars[i]))
+            if isinstance(cm.cbars[i], matplotlib.colorbar.Colorbar):
+                print(type(cm.cbars[i]))
+                cm.cbars[i].set_label('Cell type\nfraction',fontsize=5)
+                cm.cbars[i].set_ticklabels([0,0.5,1],fontsize=5)
+                cm.cbars[i].ax.tick_params(axis='y',  width=0.25)
+                cm.cbars[i].outline.set_linewidth(0.25)
+            plt.rcParams["legend.title_fontsize"] = 5
+            plt.rcParams["legend.fontsize"] = 5               
+        plt.rcParams["legend.title_fontsize"] = 5
+        plt.rcParams["legend.fontsize"] = 5
+
     current_fig = plt.gcf()
     current_fig_width, current_figure_height = current_fig.figure.get_size_inches()
 
@@ -275,6 +336,7 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
 
     current_fig.set_size_inches(new_width, new_height)
     
+    # ~ Save plots ~ #
     # Create the directory if it doesn't exist
     dir_name = os.path.dirname(output)
     if dir_name and not os.path.exists(dir_name):
@@ -297,4 +359,9 @@ def create_heatmap(#### BASIC INPUT PARAMETERS ####
     print(f"Heatmap saved to {filename_svg}")
 
     plt.show()
+
+    final_data = df_for_metadata_annotation[valid_metadata_columns]
+    final_color = final_colors_for_annotation
+
+    return cm, final_data, final_color
 

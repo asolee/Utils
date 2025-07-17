@@ -7,7 +7,7 @@ import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
 
 def create_stacked_barplot(
-                           #### BASIC INPUT PARAMETERS ####
+                           # ~ BASIC INPUT PARAMETERS ~ #
                            dataset: pd.DataFrame,
                            meta_column: str,
                            value_columns: list,
@@ -19,24 +19,24 @@ def create_stacked_barplot(
                            ax_width: float = None,
                            aspect: float = None,
                            dpi: float = 600,
-                           #### SCALING OPTIONS ####
+                           # ~ SCALING OPTIONS ~ #
                            scaling: str = 'none',
-                           #### NORMALIZATION OPTIONS ####
+                           # ~ NORMALIZATION OPTIONS ~ #
                            normalize_data: bool = False,
-                           #### EDIT FOCUS VALUES FEATURES ####
+                           # ~ EDIT FOCUS VALUES FEATURES ~ #
                            focus_value: list = None,
                            collapse_focus_values_as: str = None,
                            collapsed_color: str = None,
                            color_map: dict = None,
-                           #### ERROR BARS PARAMETERS ####
+                           # ~ ERROR BARS PARAMETERS ~ #
                            add_error_bars: bool = False,
-                           #### CONNECTING SHADES PARAMETERS ####
+                           # ~ CONNECTING SHADES PARAMETERS ~ #
                            add_connecting_shades: bool = False,
                            connecting_shades_alpha: float = 0.15,
-                           #### CATEGORY BORDER PARAMETERS ####
+                           # ~ CATEGORY BORDER PARAMETERS ~ #
                            add_category_border: bool = False,
                            category_border_width: float = 0.5,
-                           #### BOXES PARAMETERS ####
+                           # ~ BOXES PARAMETERS ~ #
                            boxes_column: str = None,
                            boxes_color_map: dict = None,
                            boxes_y_position: float = 1.05,
@@ -49,7 +49,7 @@ def create_stacked_barplot(
                            boxes_legend_fontsize: float = 15,
                            boxes_legend_y_pos: float = 1,
                            boxes_legend_x_pos: float = 0.5,
-                           #### METADATA GROUPING ####
+                           # ~ METADATA GROUPING ~ #
                            group_by_column: str = None,
                            group_spacing: float = 0,
                            group_label_rotation: float = 0,
@@ -60,7 +60,7 @@ def create_stacked_barplot(
                            group_bracket_horizontal_line_length: float = 0.5,
                            group_position: str = 'bottom',
                            show_group_label: bool = True,
-                           #### FONTSIZE AND LAYOUT PARAMETERS ####
+                           # ~ FONTSIZE AND LAYOUT PARAMETERS ~ #
                            # ~ axis Label ~ #
                            show_xlabel: bool = True, 
                            xlabel: str = None,                                           
@@ -89,7 +89,6 @@ def create_stacked_barplot(
                            legend_x_pos: float = 1.5,
                            legend_fontsize: float = 10,
                            legend_position: str = "center left",
-                           #TO DO: add legend_pad
                            # ~ bar ~ #
                            bar_width: float = 0.8,
                            # ~ spine ~ #
@@ -105,7 +104,7 @@ def create_stacked_barplot(
 
     Args:
 
-        #### BASIC INPUT PARAMETERS ####
+        # ~ BASIC INPUT PARAMETERS ~ #
 
         dataset (pd.DataFrame): The input pandas DataFrame.
         meta_column (str): The column to be used on the X-axis (only one accepted).
@@ -125,7 +124,7 @@ def create_stacked_barplot(
         aspect (float, optional): If {ax_width} is specified, define the ratio between {ax_width} to axes height. Defaults to None
         dpi (float, optional): Dots per inch. Defaults to 600
 
-        #### SCALING OPTIONS ####
+        # ~ SCALING OPTIONS ~ #
 
         scaling (str, optional): Determines how values are aggregated for each bar.
                                  'none': Values are summed for each meta_column group.
@@ -133,12 +132,12 @@ def create_stacked_barplot(
                                  'mean': The mean of each category's values is used for each meta_column group.
                                  Defaults to 'none'.
 
-        #### NORMALIZATION OPTIONS ####
+        # ~ NORMALIZATION OPTIONS ~ #
 
         normalize_data (bool, optional): If True, the stacked bars will represent proportions (summing to 1).
                                          If False, the raw counts will be plotted. Defaults to True.
 
-        #### EDIT FOCUS VALUES FEATURES ####
+        # ~ EDIT FOCUS VALUES FEATURES ~ #
 
         focus_value (list, optional): A subset of value_columns to focus on, gouping the excluded ones in a "other" category.
                                        If {collapse_focus_values_as} is None, columns in focus_value
@@ -157,25 +156,25 @@ def create_stacked_barplot(
                                             Colors can be matplotlib color names (strings) or RGBA tuples (e.e., (0.1, 0.2, 0.3, 1.0)).
                                             If a category is not in the map, a default color will be used.
 
-        #### ERROR BARS PARAMETERS ####
+        # ~ ERROR BARS PARAMETERS ~ #
 
         add_error_bars (bool, optional): If True, error bars representing the raw standard deviation
                                           of the counts will be added to the bars. Defaults to False.
 
-        #### CONNECTING SHADES PARAMETERS ####
+        # ~ CONNECTING SHADES PARAMETERS ~ #
 
         add_connecting_shades (bool, optional): If True, adds semi-transparent shaded regions connecting
                                                  the same categories across different stacked bars. Defaults to False.
         connecting_shades_alpha (float, optional): Transparency level for connecting shades. Defaults to 0.15.
 
-        #### CATEGORY BORDER PARAMETERS ####
+        # ~ CATEGORY BORDER PARAMETERS ~ #
 
         add_category_border (bool, optional): If True, adds a thin black line around each category in the stacked bars.
                                                Defaults to True.
         category_border_width (float, optional): The width of the black line around categories if {add_category_border} is True.
                                                  Defaults to 0.5.
 
-        #### BOXES PARAMETERS ####
+        # ~ BOXES PARAMETERS ~ #
         
         #TO DO: add more than one line in top_box
         boxes_column (str, optional): Name of the column in the provided dataset to be reppresented as a box above bars.
@@ -198,7 +197,7 @@ def create_stacked_barplot(
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
         boxes_legend_x_pos (float, optional): Position of top_box legend on X-axis
 
-        #### METADATA GROUPING ####
+        # ~ METADATA GROUPING ~ #
 
         group_by_column (str, optional): The name of a column in the provided dataset to use for grouping {meta_column} values.
                                           If provided, bars will be grouped based on this column's values,
@@ -224,7 +223,7 @@ def create_stacked_barplot(
                                         'top': Above the plot, near the title.
         show_group_label (bool, optional): If True, the group labels will be displayed. Defaults to True.
 
-        #### FONTSIZE AND LAYOUT PARAMETERS ####
+        # ~ FONTSIZE AND LAYOUT PARAMETERS ~ #
         # ~ axis Label ~ #
         show_xlabel (bool, optional): If True, the x-axis label will be displayed. Defaults to True.
         xlabel (str, optional): Custom label for the x-axis. If provided, overrides default. Defaults to None.
@@ -353,12 +352,12 @@ def create_stacked_barplot(
             raise TypeError("\{boxes_column\} must be a string") 
         if boxes_column not in dataset.columns:
             raise ValueError(f"Column {{boxes_column}} not found in the dataset")
-        #Ensure consistency between metadata and top boxes column values
+        # Ensure consistency between metadata and top boxes column values
         top_boxes_consistency_check = dataset[[meta_column,boxes_column]].drop_duplicates()
         if top_boxes_consistency_check.duplicated(subset=[meta_column]).any():
             conflicting_meta_values = top_boxes_consistency_check[top_boxes_consistency_check.duplicated(subset=[meta_column])][meta_column].to_list()
             raise ValueError(f"Each value in {{meta_column}} should correspond to a unique value in {{boxes_column}}, conflicting {{meta_column}} values: {conflicting_meta_values}")
-        #Validate {boxes_color_map}
+        # Validate {boxes_color_map}
         if boxes_color_map is not None and not isinstance(boxes_color_map, dict):
             raise TypeError("\{boxes_color_map\} must be a dictionary if provided")
         if boxes_color_map is None:
@@ -376,7 +375,7 @@ def create_stacked_barplot(
     # List for columns that will be plotted on Y-axis
     cols_to_plot_y = []
     # Dictionary to map category names to their assigned colors
-    category_colors_internal_map = {} # Internal map to ensure all plotted categories have a color
+    category_colors_internal_map = {}
 
     # Use default matplotlib color and allow repeating the cicle
     prop_cycle = plt.rcParams['axes.prop_cycle']
@@ -390,7 +389,7 @@ def create_stacked_barplot(
         # Assign a color for the collapsed focus_value category
         if collapsed_color: # Prioritize specific collapsed_color if provided
             category_colors_internal_map[collapse_focus_values_as] = collapsed_color
-        elif collapse_focus_values_as in color_map: # Then check general color_map
+        elif collapse_focus_values_as in color_map: # check general color_map
             category_colors_internal_map[collapse_focus_values_as] = color_map[collapse_focus_values_as]
         else: # Otherwise use default cycle
             category_colors_internal_map[collapse_focus_values_as] = default_colors[color_idx % len(default_colors)]
@@ -404,7 +403,7 @@ def create_stacked_barplot(
             if 'others' in color_map:
                 category_colors_internal_map['others'] = color_map['others']
             else:
-                category_colors_internal_map['others'] = 'gray' # 'others' is typically gray
+                category_colors_internal_map['others'] = 'gray' # gray color for 'others'
 
     # Scenario 2: Plot focus_value individually and collapse remaining to 'others'
     elif focus_value:
@@ -426,7 +425,7 @@ def create_stacked_barplot(
             if 'others' in color_map:
                 category_colors_internal_map['others'] = color_map['others']
             else:
-                category_colors_internal_map['others'] = 'gray' # 'others' is typically gray
+                category_colors_internal_map['others'] = 'gray' # gray color for 'others'
 
     # Scenario 3: No focus_value specified, plot all value_columns individually
     else:
@@ -447,13 +446,11 @@ def create_stacked_barplot(
         df_plot_final = df_plot_final.merge(dataset[[meta_column, boxes_column]].drop_duplicates(), on=meta_column, how='left')
 
 
-    # ~ Calculate Error Bars (if requested) before any scaling/normalization ~ #
+    # ~ Calculate error bars (if requested) before any scaling/normalization ~ #
     # The standard deviation should always be calculated from the original "counts" per meta_column,
-    # as this represents the variability of the data points contributing to each segment.
     grouped_std = None
     if add_error_bars:
         # Calculate standard deviation for each component within each meta_column group.
-        # This will be based on the raw values for each (meta_column, category) pair.
         grouped_std = df_plot_final.groupby(meta_column)[cols_to_plot_y].std()
         grouped_std = grouped_std.fillna(0) # Fill NaN standard deviations with 0
 
@@ -469,7 +466,7 @@ def create_stacked_barplot(
 
     dataframe_after_scaling = grouped_df
 
-    # ~ Apply Normalization (optional) ~ #
+    # ~ Apply Normalization ~ #
     if normalize_data:
         # Calculate row sums for normalization. Handle cases where a row sum might be zero to avoid division by zero.
         row_sums = grouped_df.sum(axis=1)
@@ -480,15 +477,15 @@ def create_stacked_barplot(
         if add_error_bars and grouped_std is not None:
             grouped_std_scaled = grouped_std.div(row_sums, axis=0).fillna(0)
     else:
-        grouped_df_scaled = grouped_df.copy() # Use raw counts/medians/means if not normalizing
+        grouped_df_scaled = grouped_df.copy()
         if add_error_bars and grouped_std is not None:
-            grouped_std_scaled = grouped_std.copy() # Use raw std if not normalizing
+            grouped_std_scaled = grouped_std.copy()
 
 
     # ~ Determine Plotting Order based on value_order parameter ~ #
     sorted_categories = []
     if value_order == 'default':
-        # Use the order as provided in cols_to_plot_y, but ensure 'others' is last if present
+        # Use the order as provided in cols_to_plot_y, but ensure 'others' is present
         sorted_categories = [col for col in cols_to_plot_y if col != 'others']
         if 'others' in cols_to_plot_y:
             sorted_categories.append('others')
@@ -497,16 +494,16 @@ def create_stacked_barplot(
         median_contributions = grouped_df_scaled.median()
         # Sort categories based on their median contribution in descending order (for biggest at bottom)
         sorted_categories = median_contributions.sort_values(ascending=False).index.tolist()
-        # Ensure 'others' is always at the very top (last position in stack)
+        # Ensure 'others' is always at the top position
         if 'others' in sorted_categories:
             sorted_categories.remove('others')
             sorted_categories.append('others')
     elif value_order == 'median_ascending':
         # Calculate the median contribution for each category across all groups
         median_contributions = grouped_df_scaled.median()
-        # Sort categories based on their median contribution in ascending order (for smallest at bottom)
+        # Sort categories based on their median contribution in ascending order (for smallest at bottom )
         sorted_categories = median_contributions.sort_values(ascending=True).index.tolist()
-        # Ensure 'others' is always at the very top (last position in stack)
+        # Ensure 'others' is always at the top position
         if 'others' in sorted_categories:
             sorted_categories.remove('others')
             sorted_categories.append('others')
@@ -599,14 +596,14 @@ def create_stacked_barplot(
         x_labels = grouped_df_scaled.index.tolist()
 
 
-    # Add connecting shades if requested
+    # ~ Add connecting shades if requested ~ #
     if add_connecting_shades:
         cumulative_df_scaled = grouped_df_scaled.cumsum(axis=1)
 
         for category in sorted_categories:
             y_cumulative = cumulative_df_scaled[category].values
 
-            if category == sorted_categories[0]: # First category, bottom is 0
+            if category == sorted_categories[0]:
                 y_previous_shades = np.zeros(len(x_positions))
             else:
                 prev_category_index = sorted_categories.index(category) - 1
@@ -646,14 +643,14 @@ def create_stacked_barplot(
                    **border_kwargs)
 
             if category not in plotted_categories_for_legend:
-                plotted_categories_for_legend.add(category) # Mark as plotted for legend
+                plotted_categories_for_legend.add(category)
 
             bottom_val += height
 
     ax.set_xticks(x_positions)
     ax.set_xlim(x_positions[0] - (0.5 + (0.5 - (bar_width/2))), x_positions[-1] + (0.5 + (0.5 - (bar_width/2))))
 
-    # ~ Automatic alignment based on x_tick_label_rotation and anchor rotation mode to better visualization ~ #
+    # ~ ticks label adjustment based on rotation ~ #
     ha_for_set_xticklabels = 'center' # Default
     rotation_mode_for_xticklabels = None # Default
 
@@ -667,7 +664,7 @@ def create_stacked_barplot(
         ha_for_set_xticklabels = 'left'
         rotation_mode_for_xticklabels = 'anchor'
     else: # For 90 degrees or other angles
-        ha_for_set_xticklabels = 'right' # Common for 90 deg rotation to keep label below tick
+        ha_for_set_xticklabels = 'right'
         rotation_mode_for_xticklabels = 'anchor'
 
     # Set the tick labels using the determined string alignment and rotation mode
@@ -678,12 +675,12 @@ def create_stacked_barplot(
                        fontsize=x_tick_label_fontsize,
                        rotation_mode=rotation_mode_for_xticklabels)
     
-    #set robust y pad
+    # Set robust y pad
     y_transform = ax.get_xaxis_transform()
-    #tranform points to proper axis coordinates
+    # Tranform points to proper axis coordinates
     y_display_at_zero = y_transform.transform((0, 0))[1] 
     y_display_at_padding = y_transform.transform((0, x_ticks_label_pad))[1]
-    # Let's get the figure's dpi to make the conversion more accurate
+    # Gget the figure's dpi to make the conversion more accurate
     fig_dpi = fig.dpi
     # Convert pixels to points: pixels * (72 / dpi)
     padding_in_pixels = abs(y_display_at_padding - y_display_at_zero)
@@ -695,32 +692,30 @@ def create_stacked_barplot(
         if group_position == 'bottom':
             bracket_horizontal_y_level = -0.05 + group_label_y_offset # Base offset + user-defined offset
             label_y_level = -0.15 + group_label_y_offset  # Base offset + user-defined offset
-            bracket_line_offset = -1 * group_bracket_vertical_line_length # Line goes downwards from horizontal line
+            bracket_line_offset = -1 * group_bracket_vertical_line_length 
         elif group_position == 'middle':
             # In 'middle' position, group_label_y_offset controls the horizontal line's position
             bracket_horizontal_y_level = group_label_y_offset 
-            # The label's position is then relative to this horizontal line, considering the vertical line length
+            # The label's position is then relative to this horizontal line
             label_y_level = bracket_horizontal_y_level - group_bracket_vertical_line_length - 0.05
             
-            bracket_line_offset = group_bracket_vertical_line_length # Line goes upwards from horizontal line
+            bracket_line_offset = group_bracket_vertical_line_length
 
         elif group_position == 'top':
             # Position above the plot, near the title.
-            # These values are relative to the axis (1.0 is the top of the y-axis)
-            # They might need adjustment based on typical y-axis limits and plot size.
             bracket_horizontal_y_level = 1.05 + group_label_y_offset
             label_y_level = 1.15 + group_label_y_offset
-            bracket_line_offset = -1 * group_bracket_vertical_line_length # Line goes downwards from horizontal line
+            bracket_line_offset = -1 * group_bracket_vertical_line_length 
 
         for group_name, start_x_coord, end_x_coord in group_label_data:
 
             if start_x_coord is None or end_x_coord is None: # Skip incomplete group data
                 continue
 
-            # Only draw if the group has more than one member
-            if group_member_counts.get(group_name, 0) > 1: # Check group member count
+            # Only draw brackets if the group has more than one member
+            if group_member_counts.get(group_name, 0) > 1:
                 
-                # These are already the effective x-coordinates adjusted for bar width
+                # Effective x-coordinates adjusted for bar width
                 effective_start_x = start_x_coord
                 effective_end_x = end_x_coord
 
@@ -735,7 +730,7 @@ def create_stacked_barplot(
                 ax.plot([effective_end_x, effective_end_x], [bracket_horizontal_y_level, bracket_horizontal_y_level + bracket_line_offset],
                         color='black', transform=ax.get_xaxis_transform(), clip_on=False, linewidth=group_bracket_linewidth)
 
-                # Add group label conditionally
+                # Add group label
                 if show_group_label:
                     ax.text((effective_start_x + effective_end_x) / 2, label_y_level,
                             group_name, ha='center', va='top',
@@ -842,7 +837,7 @@ def create_stacked_barplot(
                                         fontsize=boxes_legend_fontsize,
                                         title_fontsize=boxes_legend_fontsize)
         
-            # Manually add the first legend back to the figure, as the second one might overwrite it
+            # Manually add the first legend back to the figure
             ax.add_artist(top_box_legend)
 
 
@@ -852,7 +847,7 @@ def create_stacked_barplot(
         # If error bars are present, include their upper bound in the max_y_value calculation
         max_y_value += grouped_std_scaled.max().max() # Add the largest standard deviation
     
-    # Add a buffer 5% of the max value
+    # Add a pad for Y-axis limit
     y_upper_limit = max_y_value * (1+y_upper_pad)
     ax.set_ylim(0, y_upper_limit)
 
@@ -866,14 +861,14 @@ def create_stacked_barplot(
         title_suffix += "Means"
 
     if normalize_data:
-        title_suffix = "Proportions" # Overwrite if normalized
+        title_suffix = "Proportions"
 
     if show_title:
         # Set titles and labels
         #tranform points to proper axis coordinates
         y_display_at_zero = y_transform.transform((0, 0))[1] 
         y_display_at_padding = y_transform.transform((0, title_pad))[1]
-        # Let's get the figure's dpi to make the conversion more accurate
+        # Get the figure's dpi to make the conversion more accurate
         fig_dpi = fig.dpi
         # Convert pixels to points: pixels * (72 / dpi)
         padding_in_pixels = abs(y_display_at_padding - y_display_at_zero)
@@ -968,14 +963,9 @@ def create_stacked_barplot(
             
     ax.add_artist(main_legend)
     ax.get_legend().remove()
-
-    # Customization for the taxonomic profile plot
     ax.grid(axis='x', visible=False)
     if yticks:
         ax.set_yticks(yticks)
-
-    #control layout
-    #plt.tight_layout()
 
     # ~ Saving Plot (if output path is provided) ~ #
     if output:
@@ -983,6 +973,7 @@ def create_stacked_barplot(
         if dir_name and not os.path.exists(dir_name):
             os.makedirs(dir_name)
 
+    # select legend to plot
     if boxes_legend_pos == "bottom":
         artist_elements = [main_legend,top_box_legend]
     else:

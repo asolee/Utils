@@ -8,7 +8,7 @@ import seaborn as sns
 import matplotlib.lines as mlines
 
 def create_boxplot(
-                   #### BASIC INPUT PARAMETERS #### 
+                   # ~ BASIC INPUT PARAMETERS ~ # 
                    dataset: pd.DataFrame,
                    meta_column: str,
                    value_column: str or list,
@@ -20,7 +20,7 @@ def create_boxplot(
                    fig_width: float = 10,
                    fig_height: float = 7,
                    dpi: float = 600,
-                   #### BOXPLOT STYLE PARAMETERS ####
+                   # ~ BOXPLOT STYLE PARAMETERS ~ #
                    add_swarmplot: bool = False,
                    swarm_size: float = 3,
                    swarm_alpha: float = 0.5,
@@ -38,7 +38,7 @@ def create_boxplot(
                    mean_marker_size: float = 8,
                    mean_marker_color: str = 'green',
                    show_mean: bool = False,
-                   #### METADATA GROUPING ####
+                   # ~ METADATA GROUPING ~ #
                    group_by_column: str = None,
                    group_position: str = 'bottom',
                    group_spacing: float = 0,
@@ -49,7 +49,7 @@ def create_boxplot(
                    group_bracket_vertical_line_length: float = 0.05,
                    group_bracket_horizontal_line_length: float = 0.5,
                    show_group_label: bool = True,                   
-                   #### BOXES PARAMETERS ####
+                   # ~ BOXES PARAMETERS ~ #
                    boxes_column: str = None,
                    boxes_color_map: dict = None,
                    boxes_y_position: float = 1.05,
@@ -61,7 +61,7 @@ def create_boxplot(
                    boxes_legend_title: str = None, 
                    boxes_legend_fontsize: float = 15,
                    boxes_legend_y_pos: float = 1,
-                   #### FONTSIZE AND LAYOUT PARAMETERS ####
+                   # ~ FONTSIZE AND LAYOUT PARAMETERS ~ #
                    # ~ axis label ~ #
                    show_xlabel: bool = True,
                    show_ylabel: bool = True,
@@ -89,7 +89,6 @@ def create_boxplot(
                    legend_x_pos: float = 1.5,
                    legend_fontsize: float = 10,
                    legend_position: str = "center left",
-                   #TO DO: add legend_pad
                    # ~ spine ~ #
                    hide_top_spine: bool = False,
                    hide_right_spine: bool = False,
@@ -102,7 +101,7 @@ def create_boxplot(
     Generates box plots
 
     Args:
-        #### BASIC INPUT PARAMETERS ####
+        # ~ BASIC INPUT PARAMETERS ~ #
         dataset (pd.DataFrame): The input pandas DataFrame.
         meta_column (str): The column to be used on the X-axis for grouping.
         value_column (str or list): The column(s) containing the values for the boxplots.
@@ -126,7 +125,7 @@ def create_boxplot(
         fig_height (float, optional): The height of the figure in inches. Defaults to 7.
         dpi (float, optional): Dots per inch. Defaults to 600
 
-        #### BOXPLOT STYLE PARAMETERS ####
+        # ~ BOXPLOT STYLE PARAMETERS ~ #
         add_swarmplot (bool, optional): If True, adds a swarm plot on top of the box plots to show
                                          individual data points. Defaults to False.
         swarm_size (float, optional): Marker size for swarm plot points. Defaults to 3.
@@ -146,7 +145,7 @@ def create_boxplot(
         mean_marker_color (str, optional): Color of the mean marker. Defaults to 'green'.
         show_mean (bool, optional): If True, the mean is marked on the box plot. Defaults to False.
 
-        #### METADATA GROUPING ####
+        # ~ METADATA GROUPING ~ #
         group_by_column (str, optional): The name of a column in the provided dataset to use for grouping {meta_column} values.
                                           If provided, bars will be grouped based on this column's values,
                                           and group labels with brackets will be added below the x-axis. Defaults to None.
@@ -169,7 +168,7 @@ def create_boxplot(
         group_bracket_horizontal_line_length (float, optional): Controls the length of the horizontal lines of the square brackets. Defaults to 0.5.
         show_group_label (bool, optional): If True, the group labels will be displayed. Defaults to True.
 
-        #### BOXES PARAMETERS ####
+        # ~ BOXES PARAMETERS ~ #
         
         #TO DO: add more than one line in top_box
         boxes_column (str, optional): Name of the column in the provided dataset to be reppresented as a box above bars.
@@ -191,7 +190,7 @@ def create_boxplot(
         boxes_legend_fontsize (float, optional): font size of boxes legend element text. Defaults to 15
         boxes_legend_y_pos (float, optional): Position of top_box legend on Y-axis
 
-        #### FONTSIZE AND LAYOUT PARAMETERS ####
+        # ~ FONTSIZE AND LAYOUT PARAMETERS ~ #
         # ~ axis label ~ #
         show_xlabel (bool, optional): If True, the x-axis label will be displayed. Defaults to True.
         show_ylabel (bool, optional): If True, the y-axis label will be displayed. Defaults to True.
@@ -222,7 +221,7 @@ def create_boxplot(
                                             Matplot values, 'best','upper right','upper left','lower left','lower right','right','center left','center right','lower center','upper center','center'
                                             Custom values, "custom bottom"
                                             Defaults to 'center left'.
-        # ~ spine ~ #s
+        # ~ spine ~ #
         hide_top_spine (bool, optional): Hide the top spine. Default to False
         hide_right_spine (bool, optional): Hide the right spine. Default to False
         hide_bottom_spine (bool, optional): Hide the bottom spine. Default to False
@@ -362,18 +361,18 @@ def create_boxplot(
     else:
         final_hue_order = [] #no hue order
 
-    # validate top boxes column parameters
+    # Validate top boxes column parameters
     if boxes_column:
         if not isinstance(boxes_column, str):
             raise TypeError("\{boxes_column\} must be a string") 
         if boxes_column not in dataset.columns:
             raise ValueError(f"Column {{boxes_column}} not found in the dataset")
-        #Ensure consistency between metadata and top boxes column values
+        # Ensure consistency between metadata and top boxes column values
         top_boxes_consistency_check = dataset[[meta_column,boxes_column]].drop_duplicates()
         if top_boxes_consistency_check.duplicated(subset=[meta_column]).any():
             conflicting_meta_values = top_boxes_consistency_check[top_boxes_consistency_check.duplicated(subset=[meta_column])][meta_column].to_list()
             raise ValueError(f"Each value in {{meta_column}} should correspond to a unique value in {{boxes_column}}, conflicting {{meta_column}} values: {conflicting_meta_values}")
-        #Validate {boxes_color_map}
+        # Validate {boxes_color_map}
         if boxes_color_map is not None and not isinstance(boxes_color_map, dict):
             raise TypeError("\{boxes_color_map\} must be a dictionary if provided")
         if boxes_color_map is None:
@@ -381,8 +380,6 @@ def create_boxplot(
 
 
     # ~ Plotting ~ #
-    #set plot font
-
     #create figure
     fig, ax = plt.subplots(figsize=(fig_width, fig_height),constrained_layout = True)
 
@@ -428,7 +425,7 @@ def create_boxplot(
             x_positions_meta.append(current_x + total_width_per_meta_group / 2) # Center point for the meta_val tick
             current_group_members_x_pos.append(x_positions_meta[-1])
             x_tick_labels.append(meta_val)
-            current_x += total_width_per_meta_group + spacing_between_meta_groups # Always add meta group spacing
+            current_x += total_width_per_meta_group + spacing_between_meta_groups # Add meta group spacing
             previous_group = current_group
 
         # Add the last group's data
@@ -440,7 +437,7 @@ def create_boxplot(
         current_x = 0
         for i, meta_val in enumerate(final_meta_order):
             x_positions_meta.append(current_x + total_width_per_meta_group / 2) # Center of the meta group
-            current_x += total_width_per_meta_group + spacing_between_meta_groups # Always add meta group spacing
+            current_x += total_width_per_meta_group + spacing_between_meta_groups # Add meta group spacing
 
         x_tick_labels = final_meta_order
 
@@ -544,7 +541,7 @@ def create_boxplot(
 
     ax.set_xticks(x_positions_meta) # Set ticks at the center of each meta_column group
     
-    # Set x-tick labels and rotation
+    # ~ ticks label adjustment based on rotation ~ #
     ha_for_set_xticklabels = 'center'
     rotation_mode_for_xticklabels = None
 
@@ -566,12 +563,12 @@ def create_boxplot(
                        fontsize=xticks_label_fontsize,
                        rotation_mode=rotation_mode_for_xticklabels)
     
-    #set robust y pad
+    # Set robust Y-axis pad
     y_transform = ax.get_yaxis_transform()
-    #tranform points to proper axis coordinates
+    # Tranform points to proper axis coordinates
     y_display_at_zero = y_transform.transform((0, 0))[1] 
     y_display_at_padding = y_transform.transform((0, xticks_label_pad))[1]
-    # Let's get the figure's dpi to make the conversion more accurate
+    # Get the figure's dpi to make the conversion more accurate
     fig_dpi = fig.dpi
     # Convert pixels to points: pixels * (72 / dpi)
     padding_in_pixels = abs(y_display_at_padding - y_display_at_zero)
@@ -711,16 +708,16 @@ def create_boxplot(
                                         fontsize=boxes_legend_fontsize,
                                         title_fontsize=boxes_legend_fontsize)
         
-            # Manually add the first legend back to the figure, as the second one might overwrite it
+            # Manually add the first legend back to the figure
             ax.add_artist(top_box_legend)
 
-    # Set y-axis limits
+    # Set Y-axis limits
     min_y = df_plot[value_column].min()
     max_y = df_plot[value_column].max()
     y_range = max_y - min_y
     ax.set_ylim(min_y - y_range * 0.05, max_y + y_range * y_upper_pad)
 
-    # Set x-axis limits based on the plotted box positions
+    # Set X-axis limits based on the plotted box positions
     if all_box_positions:
         min_x_pos = min(all_box_positions)
         max_x_pos = max(all_box_positions)
@@ -830,35 +827,32 @@ def create_boxplot(
         
     ax.add_artist(plot_legend)
     ax.get_legend().remove()
-    
-    #fig.tight_layout()
 
-    # ~ Saving Plot ~ #
+    # ~ Saving Plot (if output path is provided) ~ #
     if output:
         dir_name = os.path.dirname(output)
         if dir_name and not os.path.exists(dir_name):
             os.makedirs(dir_name)
 
-        filename_pdf = output + ".pdf"
-        if boxes_legend_pos == "bottom":
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[plot_legend,top_box_legend])
-        else:
-            plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[plot_legend])
-        print(f"Box plot saved to {filename_pdf}")
+    # select legend to plot
+    if boxes_legend_pos == "bottom":
+        artist_elements = [plot_legend,top_box_legend]
+    else:
+        artist_elements = [plot_legend]
 
-        filename_png = output + ".png"
-        if boxes_legend_pos == "bottom":
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[plot_legend,top_box_legend])
-        else:
-            plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[plot_legend])
-        print(f"Box plot saved to {filename_png}")
+    filename_pdf = output + ".pdf"
+    plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=artist_elements)
+    print(f"Box plot saved to {filename_pdf}")
 
-        filename_svg = output + ".svg"
-        plt.rcParams["svg.fonttype"] = "none"
-        if boxes_legend_pos == "bottom":
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=[plot_legend,top_box_legend])
-        else:
-            plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=[plot_legend])
-        print(f"Box plot saved to {filename_svg}")
+    filename_png = output + ".png"
+    plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
+    print(f"Box plot saved to {filename_png}")
+
+    filename_svg = output + ".svg"
+    plt.rcParams["svg.fonttype"] = "none"
+    plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
+    print(f"Box plot saved to {filename_svg}")
 
     plt.show()
+
+    return ax, artist_elements
