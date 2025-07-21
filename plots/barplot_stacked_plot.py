@@ -974,7 +974,7 @@ def create_stacked_barplot(
             os.makedirs(dir_name)
 
     # select legend to plot
-    if boxes_legend_pos == "bottom":
+    if boxes_column is not None:
         artist_elements = [main_legend,top_box_legend]
     else:
         artist_elements = [main_legend]
