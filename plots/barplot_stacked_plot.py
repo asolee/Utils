@@ -5,6 +5,7 @@ import os
 import warnings
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
+import pdb
 
 def create_stacked_barplot(
                            # ~ BASIC INPUT PARAMETERS ~ #
@@ -732,7 +733,7 @@ def create_stacked_barplot(
 
                 # Add group label
                 if show_group_label:
-                    ax.text((effective_start_x + effective_end_x) / 2, label_y_level,
+                    group_label_artist = ax.text((effective_start_x + effective_end_x) / 2, label_y_level,
                             group_name, ha='center', va='top',
                             fontsize=group_label_fontsize, rotation=group_label_rotation,
                             transform=ax.get_xaxis_transform(), clip_on=False)
@@ -974,22 +975,23 @@ def create_stacked_barplot(
             os.makedirs(dir_name)
 
     # select legend to plot
+    artist_elements = [main_legend]
     if boxes_column is not None:
-        artist_elements = [main_legend,top_box_legend]
-    else:
-        artist_elements = [main_legend]
+        artist_elements += [top_box_legend]
+    if show_group_label:
+        artist_elements += [group_label_artist]
 
     filename_pdf = output + ".pdf"
     plt.savefig(filename_pdf, format='pdf', dpi=dpi, bbox_inches='tight', bbox_extra_artists=artist_elements)
     print(f"Box plot saved to {filename_pdf}")
 
     filename_png = output + ".png"
-    plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
+    plt.savefig(filename_png, format='png', dpi=dpi, bbox_inches='tight', bbox_extra_artists=artist_elements)
     print(f"Box plot saved to {filename_png}")
 
     filename_svg = output + ".svg"
     plt.rcParams["svg.fonttype"] = "none"
-    plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight',bbox_extra_artists=artist_elements)
+    plt.savefig(filename_svg, format='svg', dpi=dpi, bbox_inches='tight', bbox_extra_artists=artist_elements)
     print(f"Box plot saved to {filename_svg}")
 
     return dataframe_before_scaling, dataframe_after_scaling, ax, artist_elements
