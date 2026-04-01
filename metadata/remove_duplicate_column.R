@@ -36,7 +36,7 @@ deduplicate_all <- function(data) {
 
         if (are_identical) {
           message(paste0("[", duplicate, "] matches [", primary, "]. Removing duplicate."))
-          output_df <- output_df %>% select(-all_of(duplicate))
+          output_df <- output_df %>% dplyr::select(-all_of(duplicate))
         } else {
           warning(paste0("[", duplicate, "] DIFFERS from [", primary, "]! Keeping both."))
         }
@@ -45,7 +45,7 @@ deduplicate_all <- function(data) {
       # If the primary still has a suffix (like 'Date.x'), clean it up
       clean_name <- gsub("\\.(x|y|[0-9])$", "", primary)
       if (primary != clean_name && !(clean_name %in% names(output_df))) {
-        output_df <- output_df %>% rename(!!clean_name := !!sym(primary))
+        output_df <- output_df %>% dplyr::rename(!!clean_name := !!sym(primary))
       }
     }
   }
