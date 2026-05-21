@@ -104,30 +104,44 @@ call_gsea_gmt <- function(ranked_list, ontology, fdr) {
   report_results(res, ontology, fdr)
 }
 
-# --- GSEA Barplot (NES-based) ---
-custom_gsea_barplot <- function(res, ontology, fdr_val, N_bar = 20) {
+# --- MODIFIED: GSEA Barplot (NES-based, Top 50, Color mapped to FDR) ---
+custom_gsea_barplot <- function(res, ontology, fdr_val, N_bar = 50) {
   df <- res@result[!is.na(res@result$p.adjust) & res@result$p.adjust < fdr_val, ]
   if (nrow(df) == 0) return(NULL)
   
   df$Clean_description <- gsub("HALLMARK_", "", df$Description)
   df$Clean_description <- gsub("_", " ", df$Clean_description)
   
+  # Grab the top 50 based on absolute magnitude of NES
   df <- df[order(-abs(df$NES)), ]
   df_top <- head(df, N_bar)
   
   ggplot(df_top, aes(x = reorder(Clean_description, NES), y = NES, fill = p.adjust)) +
-    geom_bar(stat = "identity", colour = "black", alpha = 0.7) +
+    geom_col(colour = "black", alpha = 0.85, width = 0.8) +
     coord_flip() +
-    labs(x = "", y = "Normalized Enrichment Score (NES)", title = paste("Top GSEA", ontology, "Terms")) +
-    theme_minimal(base_size = 9) +
-    scale_x_discrete(labels = label_wrap(40)) +
-    geom_hline(yintercept = 0, linetype = "dotted", color = "black", linewidth = 1) +
-    scale_fill_gradient(low = "blue", high = "black", name = "FDR")
+    labs(
+      x = "", 
+      y = "Normalized Enrichment Score (NES)", 
+      title = paste("Top", nrow(df_top), "GSEA", ontology, "Terms"),
+      fill = "Adjusted p-value"
+    ) +
+    theme_bw(base_size = 8) +  # Smaller text baseline helps fit 50 terms elegantly
+    scale_x_discrete(labels = label_wrap(45)) +
+    geom_hline(yintercept = 0, linetype = "solid", color = "black", linewidth = 0.5) +
+    # High-contrast color palette: continuous fill mapped directly to adjusted p-value
+    scale_fill_viridis_c(direction = -1, option = "plasma") +
+    theme(
+      panel.grid.major.y = element_blank(),
+      axis.text.y = element_text(color = "black"),
+      plot.title = element_text(face = "bold", hjust = 0.5)
+    )
 }
 
+# --- MODIFIED: Adjusted output resolution & aspect ratio for 50 records ---
 save_plot <- function(p, file_path_out) {
   tryCatch({
-    png(file_path_out, units = "in", width = 7, height = 6, res = 600)
+    # Scaled vertical footprint up to 12 inches to accommodate up to 50 individual bar labels safely
+    png(file_path_out, units = "in", width = 9, height = 12, res = 400)
     print(p)
   }, error = function(e) {
     message(paste("Error generating plot for", file_path_out, ":", e$message))

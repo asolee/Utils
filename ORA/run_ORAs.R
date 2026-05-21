@@ -1,7 +1,6 @@
 #!/usr/bin/env Rscript
 
 # This script runs ORA analysis using different ontologies
-# UPDATED: Added support for targeted term filtering via a 7th argument.
 
 # ORA-related constants
 MIN_GENEGROUP_SIZE = 10
@@ -198,8 +197,10 @@ report_results <- function(res, ont, fdr_val, fc_vector = NULL, suffix = ""){
       }, silent=TRUE)
       
       try({
-        res_sim <- pairwise_termsim(res)
-        p6 <- treeplot(res_sim, showCategory = 20, nWords = 4, fontsize_cladelab = 2.5, cladelab_offset = 12) + 
+        res_sig <- res
+        res_sig@result <- sig_hits
+        res_sim <- pairwise_termsim(res_sig)
+        p6 <- treeplot(res_sim, showCategory = min(20, nrow(sig_hits)), nWords = 4, fontsize_cladelab = 2.5, cladelab_offset = 12) + 
           hexpand(0.8) + ggtitle(paste("Treeplot", ont))
         ggsave(file.path(out_dir, paste0("ORA_Tree_", ont, suffix, ".png")), plot = p6, width = 12, height = 8, dpi = 600)
         
@@ -242,7 +243,7 @@ if (!is.na(args[7]) && file.exists(args[7])) {
   message(paste("Filtering for", length(TARGET_LIST), "targeted terms."))
 }
 
-if (grepl("^~|^/|/", RAW_OUT_PATH)) { PATH = path.expand(RAW_OUT_PATH) } else { PATH = file.path(dirname(file_path), RAW_OUT_PATH) }
+if (grepl("^~|^/", RAW_OUT_PATH)) { PATH = path.expand(RAW_OUT_PATH) } else { PATH = file.path(getwd(), RAW_OUT_PATH) }
 
 if (!file.exists(file_path)) stop(paste("Gene list file not found:", file_path))
 df_input <- read.table(file_path, header = TRUE, fill = TRUE, stringsAsFactors = FALSE)
